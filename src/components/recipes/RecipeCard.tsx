@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Heart, Clock, Users, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -53,6 +54,9 @@ export function RecipeCard({
   index = 0,
   totalCards = 1,
 }: RecipeCardProps) {
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+  
   // Stack effect: cards peek from behind
   const isStacked = index < 3 && totalCards > 1;
   const stackOffset = isStacked ? index * 4 : 0;
@@ -77,12 +81,23 @@ export function RecipeCard({
       )}
     >
       {/* Background Image */}
-      {imageUrl && (
+      {imageUrl && !imageError && (
         <div className="absolute inset-0">
+          {imageLoading && (
+            <div className="absolute inset-0 shimmer" />
+          )}
           <img 
             src={imageUrl} 
             alt={title}
-            className="w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-300"
+            className={cn(
+              "w-full h-full object-cover transition-opacity duration-300",
+              imageLoading ? "opacity-0" : "opacity-30 group-hover:opacity-40"
+            )}
+            onLoad={() => setImageLoading(false)}
+            onError={() => {
+              setImageLoading(false);
+              setImageError(true);
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-card/60" />
         </div>
@@ -99,12 +114,25 @@ export function RecipeCard({
         <div className="flex gap-3 sm:gap-4">
           {/* Image/Emoji Icon */}
           <div className="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-background/80 backdrop-blur flex items-center justify-center overflow-hidden shadow-sm border border-border/20">
-            {imageUrl ? (
-              <img 
-                src={imageUrl} 
-                alt={title}
-                className="w-full h-full object-cover"
-              />
+            {imageUrl && !imageError ? (
+              <div className="relative w-full h-full">
+                {imageLoading && (
+                  <div className="absolute inset-0 shimmer" />
+                )}
+                <img 
+                  src={imageUrl} 
+                  alt={title}
+                  className={cn(
+                    "w-full h-full object-cover transition-opacity duration-300",
+                    imageLoading ? "opacity-0" : "opacity-100"
+                  )}
+                  onLoad={() => setImageLoading(false)}
+                  onError={() => {
+                    setImageLoading(false);
+                    setImageError(true);
+                  }}
+                />
+              </div>
             ) : (
               <span className="text-2xl sm:text-3xl">{getRecipeEmoji(healthTags)}</span>
             )}
