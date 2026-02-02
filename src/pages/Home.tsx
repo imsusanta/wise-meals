@@ -15,7 +15,8 @@ import {
   Plus,
   Clock,
   Flame,
-  Activity
+  Activity,
+  Check
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,7 +24,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useRecipeGenerator } from "@/hooks/useRecipeGenerator";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { format, startOfWeek, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface HydrationLog {
@@ -39,6 +40,15 @@ interface Medication {
   id: string;
   name: string;
   food_interactions: string[];
+}
+
+interface TodayMeal {
+  id: string;
+  meal_type: string;
+  custom_meal_name: string | null;
+  is_prepared: boolean;
+  recipe_title: string | null;
+  prep_time: number | null;
 }
 
 // Health condition cards for the main feature
@@ -105,6 +115,8 @@ export default function Home() {
   const [isAddingWater, setIsAddingWater] = useState(false);
   const [showMedAlert, setShowMedAlert] = useState(false);
   const [selectedCondition, setSelectedCondition] = useState<string | null>(null);
+  const [todayMeals, setTodayMeals] = useState<TodayMeal[]>([]);
+  const [isLoadingMeals, setIsLoadingMeals] = useState(true);
 
   const greeting = getGreeting();
   const today = format(new Date(), "EEEE, MMMM d");
@@ -113,6 +125,7 @@ export default function Home() {
     fetchTodaysHydration();
     fetchHealthTip();
     fetchMedications();
+    fetchTodaysMeals();
   }, [user]);
 
   const fetchTodaysHydration = async () => {
@@ -158,6 +171,61 @@ export default function Home() {
     if (data) {
       setMedications(data);
     }
+  };
+
+  const fetchTodaysMeals = async () => {
+    if (!user) {
+      setIsLoadingMeals(false);
+      return;
+    }
+    
+    setIsLoadingMeals(true);
+    
+    // Get today's day of week (0 = Sunday)
+    const today = new Date();
+    const weekStart = startOfWeek(today, { weekStartsOn: 0 });
+    const dayOfWeek = Math.floor((today.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24));
+    const weekStartStr = format(weekStart, "yyyy-MM-dd");
+    
+    // Get meal plan for this week
+    const { data: plans } = await supabase
+      .from("meal_plans")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("week_start", weekStartStr)
+      .limit(1);
+    
+    if (!plans || plans.length === 0) {
+      setIsLoadingMeals(false);
+      return;
+    }
+    
+    // Get today's meals
+    const { data: items } = await supabase
+      .from("meal_plan_items")
+      .select(`
+        id,
+        meal_type,
+        custom_meal_name,
+        is_prepared,
+        recipes (title, prep_time_minutes)
+      `)
+      .eq("meal_plan_id", plans[0].id)
+      .eq("day_of_week", dayOfWeek);
+    
+    if (items) {
+      const meals = items.map(item => ({
+        id: item.id,
+        meal_type: item.meal_type,
+        custom_meal_name: item.custom_meal_name,
+        is_prepared: item.is_prepared || false,
+        recipe_title: (item.recipes as any)?.title || null,
+        prep_time: (item.recipes as any)?.prep_time_minutes || null,
+      }));
+      setTodayMeals(meals);
+    }
+    
+    setIsLoadingMeals(false);
   };
 
   const addGlass = async () => {
@@ -349,17 +417,63 @@ export default function Home() {
           <div className="absolute inset-0 bg-card/60 backdrop-blur-sm" />
           <div className="relative">
             <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border/30">
-              <span className="font-bold text-sm sm:text-base">Today's Meals</span>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-sm sm:text-base">Today's Meals</span>
+                {todayMeals.length > 0 && (
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                    {todayMeals.filter(m => m.is_prepared).length}/{todayMeals.length} done
+                  </span>
+                )}
+              </div>
               <Button variant="ghost" size="sm" asChild className="h-8 text-xs sm:text-sm text-primary hover:text-primary/80">
                 <Link to="/plan" className="gap-1">
-                  View All <ChevronRight className="h-3.5 w-3.5" />
+                  {todayMeals.length === 0 ? "Plan" : "View All"} <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
             </div>
             <div className="divide-y divide-border/30">
-              <MealSlot type="Breakfast" emoji="🍳" time="8:00 AM" />
-              <MealSlot type="Lunch" emoji="🥗" time="12:30 PM" />
-              <MealSlot type="Dinner" emoji="🍽️" time="6:00 PM" />
+              {isLoadingMeals ? (
+                // Loading skeleton
+                <>
+                  {["breakfast", "lunch", "dinner"].map((type) => (
+                    <div key={type} className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4">
+                      <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl shimmer" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 w-24 shimmer rounded" />
+                        <div className="h-3 w-32 shimmer rounded" />
+                      </div>
+                    </div>
+                  ))}
+                </>
+              ) : todayMeals.length === 0 ? (
+                // No meals planned
+                <div className="px-4 sm:px-5 py-6 text-center">
+                  <p className="text-muted-foreground text-sm mb-3">No meals planned for today</p>
+                  <Button size="sm" variant="outline" asChild className="rounded-xl">
+                    <Link to="/plan">
+                      <Plus className="h-4 w-4 mr-1" />
+                      Plan Today's Meals
+                    </Link>
+                  </Button>
+                </div>
+              ) : (
+                // Show planned meals
+                <>
+                  {["breakfast", "lunch", "dinner", "snack"].map((type) => {
+                    const meal = todayMeals.find(m => m.meal_type === type);
+                    if (!meal) return null;
+                    return (
+                      <MealSlotDynamic
+                        key={type}
+                        type={type}
+                        mealName={meal.recipe_title || meal.custom_meal_name || ""}
+                        prepTime={meal.prep_time}
+                        isPrepared={meal.is_prepared}
+                      />
+                    );
+                  })}
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -561,6 +675,72 @@ function MealSlot({ type, emoji, time }: { type: string; emoji: string; time: st
         <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
         {time}
       </div>
+    </Link>
+  );
+}
+
+const mealEmojis: Record<string, string> = {
+  breakfast: "🍳",
+  lunch: "🥗",
+  dinner: "🍽️",
+  snack: "🍎",
+};
+
+const mealLabels: Record<string, string> = {
+  breakfast: "Breakfast",
+  lunch: "Lunch",
+  dinner: "Dinner",
+  snack: "Snack",
+};
+
+function MealSlotDynamic({ 
+  type, 
+  mealName, 
+  prepTime, 
+  isPrepared 
+}: { 
+  type: string; 
+  mealName: string; 
+  prepTime: number | null; 
+  isPrepared: boolean;
+}) {
+  return (
+    <Link 
+      to="/plan"
+      className={cn(
+        "flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4",
+        "hover:bg-muted/30 active:bg-muted/50 transition-colors",
+        "tap-highlight-none touch-manipulation",
+        isPrepared && "bg-primary/5"
+      )}
+    >
+      <div className={cn(
+        "w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center text-xl sm:text-2xl border",
+        isPrepared 
+          ? "bg-primary/20 border-primary/30" 
+          : "bg-background/60 border-border/20"
+      )}>
+        {isPrepared ? (
+          <Check className="h-5 w-5 text-primary" />
+        ) : (
+          mealEmojis[type] || "🍽️"
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-bold text-sm sm:text-base flex items-center gap-2">
+          {mealLabels[type] || type}
+          {isPrepared && (
+            <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">Done</span>
+          )}
+        </p>
+        <p className="text-xs sm:text-sm text-muted-foreground truncate">{mealName}</p>
+      </div>
+      {prepTime && (
+        <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-full">
+          <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+          {prepTime}m
+        </div>
+      )}
     </Link>
   );
 }
