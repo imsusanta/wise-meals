@@ -26,6 +26,7 @@ import { useRecipeGenerator } from "@/hooks/useRecipeGenerator";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfWeek, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
+import { RecipeDetailDialog } from "@/components/recipes/RecipeDetailDialog";
 
 interface HydrationLog {
   glasses: number;
@@ -49,6 +50,7 @@ interface TodayMeal {
   is_prepared: boolean;
   recipe_title: string | null;
   prep_time: number | null;
+  recipe_id: string | null;
 }
 
 // Health condition cards for the main feature
@@ -117,6 +119,8 @@ export default function Home() {
   const [selectedCondition, setSelectedCondition] = useState<string | null>(null);
   const [todayMeals, setTodayMeals] = useState<TodayMeal[]>([]);
   const [isLoadingMeals, setIsLoadingMeals] = useState(true);
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
+  const [showRecipeDetail, setShowRecipeDetail] = useState(false);
 
   const greeting = getGreeting();
   const today = format(new Date(), "EEEE, MMMM d");
@@ -192,6 +196,7 @@ export default function Home() {
         custom_meal_name,
         is_prepared,
         meal_plan_id,
+        recipe_id,
         recipes (title, prep_time_minutes),
         meal_plans!inner (user_id)
       `)
@@ -206,6 +211,7 @@ export default function Home() {
         is_prepared: item.is_prepared || false,
         recipe_title: (item.recipes as any)?.title || null,
         prep_time: (item.recipes as any)?.prep_time_minutes || null,
+        recipe_id: item.recipe_id,
       }));
       setTodayMeals(meals);
       setIsLoadingMeals(false);
@@ -237,6 +243,7 @@ export default function Home() {
         meal_type,
         custom_meal_name,
         is_prepared,
+        recipe_id,
         recipes (title, prep_time_minutes)
       `)
       .eq("meal_plan_id", plans[0].id)
@@ -250,6 +257,7 @@ export default function Home() {
         is_prepared: item.is_prepared || false,
         recipe_title: (item.recipes as any)?.title || null,
         prep_time: (item.recipes as any)?.prep_time_minutes || null,
+        recipe_id: item.recipe_id,
       }));
       setTodayMeals(meals);
     }
@@ -498,6 +506,11 @@ export default function Home() {
                         mealName={meal.recipe_title || meal.custom_meal_name || ""}
                         prepTime={meal.prep_time}
                         isPrepared={meal.is_prepared}
+                        recipeId={meal.recipe_id}
+                        onRecipeClick={(recipeId) => {
+                          setSelectedRecipeId(recipeId);
+                          setShowRecipeDetail(true);
+                        }}
                       />
                     );
                   })}
@@ -680,6 +693,18 @@ export default function Home() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Recipe Detail Dialog */}
+      {selectedRecipeId && (
+        <RecipeDetailDialog
+          recipeId={selectedRecipeId}
+          open={showRecipeDetail}
+          onOpenChange={(open) => {
+            setShowRecipeDetail(open);
+            if (!open) setSelectedRecipeId(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -726,16 +751,28 @@ function MealSlotDynamic({
   type, 
   mealName, 
   prepTime, 
-  isPrepared 
+  isPrepared,
+  recipeId,
+  onRecipeClick
 }: { 
   type: string; 
   mealName: string; 
   prepTime: number | null; 
   isPrepared: boolean;
+  recipeId: string | null;
+  onRecipeClick: (recipeId: string) => void;
 }) {
+  const handleClick = (e: React.MouseEvent) => {
+    if (recipeId) {
+      e.preventDefault();
+      onRecipeClick(recipeId);
+    }
+  };
+
   return (
     <Link 
-      to="/plan"
+      to={recipeId ? "#" : "/plan"}
+      onClick={handleClick}
       className={cn(
         "flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4",
         "hover:bg-muted/30 active:bg-muted/50 transition-colors",
@@ -769,6 +806,9 @@ function MealSlotDynamic({
           <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
           {prepTime}m
         </div>
+      )}
+      {recipeId && (
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
       )}
     </Link>
   );
