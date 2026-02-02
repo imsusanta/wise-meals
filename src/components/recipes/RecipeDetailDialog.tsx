@@ -8,6 +8,57 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import type { GeneratedRecipe } from "@/hooks/useRecipeGenerator";
 
+function HeroImage({ 
+  src, 
+  alt, 
+  children 
+}: { 
+  src: string; 
+  alt: string; 
+  children?: React.ReactNode;
+}) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+
+  return (
+    <div className="relative w-full aspect-[16/10] overflow-hidden rounded-t-3xl">
+      {/* Shimmer skeleton */}
+      {isLoading && !hasError && (
+        <div className="absolute inset-0 shimmer" />
+      )}
+      
+      {/* Actual image */}
+      {!hasError && (
+        <img 
+          src={src} 
+          alt={alt}
+          className={cn(
+            "w-full h-full object-cover transition-opacity duration-300",
+            isLoading ? "opacity-0" : "opacity-100"
+          )}
+          onLoad={() => setIsLoading(false)}
+          onError={() => {
+            setIsLoading(false);
+            setHasError(true);
+          }}
+        />
+      )}
+      
+      {/* Error fallback */}
+      {hasError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/50 text-muted-foreground text-6xl">
+          🍽️
+        </div>
+      )}
+      
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+      
+      {children}
+    </div>
+  );
+}
+
 interface SavedRecipe {
   id: string;
   title: string;
@@ -118,17 +169,10 @@ export function RecipeDetailDialog({
             <>
               {/* Hero Image */}
               {recipe.image_url ? (
-                <div className="relative w-full aspect-[16/10] overflow-hidden rounded-t-3xl">
-                  <img 
-                    src={recipe.image_url} 
-                    alt={recipe.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-                  
+                <HeroImage src={recipe.image_url} alt={recipe.title}>
                   {/* AI Badge */}
                   {recipe.is_ai_generated && (
-                    <div className="absolute top-4 left-4">
+                    <div className="absolute top-4 left-4 z-10">
                       <Badge className="bg-secondary/90 backdrop-blur-sm text-secondary-foreground border-0 gap-1 px-3 py-1">
                         <Sparkles className="h-3 w-3" />
                         AI Generated
@@ -141,7 +185,7 @@ export function RecipeDetailDialog({
                     onClick={toggleFavorite}
                     disabled={isFavoriting}
                     className={cn(
-                      "absolute top-4 right-4 w-10 h-10 rounded-full",
+                      "absolute top-4 right-4 z-10 w-10 h-10 rounded-full",
                       "bg-background/80 backdrop-blur-sm",
                       "flex items-center justify-center",
                       "transition-all duration-200 active:scale-90",
@@ -159,7 +203,7 @@ export function RecipeDetailDialog({
                   </button>
                   
                   {/* Title overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 p-5">
+                  <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
                     <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
                       {recipe.title}
                     </h2>
@@ -169,7 +213,7 @@ export function RecipeDetailDialog({
                       </p>
                     )}
                   </div>
-                </div>
+                </HeroImage>
               ) : (
                 <DialogHeader className="p-6 pb-2">
                   <div className="flex items-start justify-between gap-3">
