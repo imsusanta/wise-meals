@@ -13,7 +13,8 @@ import {
   Search,
   X,
   PlayCircle,
-  Heart
+  Heart,
+  CalendarDays
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,6 +25,7 @@ import { CompactReelCard } from "@/components/recipes/CompactReelCard";
 import { EmptyRecipes } from "@/components/recipes/EmptyRecipes";
 import { RecipeReelSkeleton } from "@/components/ui/loading-skeletons";
 import { cn } from "@/lib/utils";
+import { format, startOfWeek } from "date-fns";
 
 interface Recipe {
   id: string;
@@ -36,6 +38,7 @@ interface Recipe {
   is_favorite: boolean;
   is_ai_generated: boolean;
   image_url: string | null;
+  isPlannedToday?: boolean;
 }
 
 const filters = ["All", "Favorites", "Under 15 min", "Heart-Healthy"];
@@ -71,6 +74,50 @@ export default function Recipes() {
     if (!user) return;
     
     setIsLoading(true);
+    
+    // First, get today's planned recipe IDs
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    let todayRecipeIds: string[] = [];
+    
+    // Try date-specific first
+    const { data: dateItems } = await supabase
+      .from("meal_plan_items")
+      .select(`recipe_id, meal_plans!inner (user_id)`)
+      .eq("planned_date", todayStr)
+      .eq("meal_plans.user_id", user.id)
+      .not("recipe_id", "is", null);
+    
+    if (dateItems && dateItems.length > 0) {
+      todayRecipeIds = dateItems.map(item => item.recipe_id).filter(Boolean) as string[];
+    } else {
+      // Fallback: Legacy day_of_week system
+      const today = new Date();
+      const weekStart = startOfWeek(today, { weekStartsOn: 0 });
+      const dayOfWeek = Math.floor((today.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24));
+      const weekStartStr = format(weekStart, "yyyy-MM-dd");
+      
+      const { data: plans } = await supabase
+        .from("meal_plans")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("week_start", weekStartStr)
+        .limit(1);
+      
+      if (plans && plans.length > 0) {
+        const { data: legacyItems } = await supabase
+          .from("meal_plan_items")
+          .select("recipe_id")
+          .eq("meal_plan_id", plans[0].id)
+          .eq("day_of_week", dayOfWeek)
+          .not("recipe_id", "is", null);
+        
+        if (legacyItems) {
+          todayRecipeIds = legacyItems.map(item => item.recipe_id).filter(Boolean) as string[];
+        }
+      }
+    }
+    
+    // Now fetch all recipes
     let query = supabase
       .from("recipes")
       .select("id, title, description, prep_time_minutes, servings, difficulty, health_tags, is_favorite, is_ai_generated, image_url")
@@ -88,7 +135,20 @@ export default function Recipes() {
     const { data, error } = await query;
     
     if (!error && data) {
-      setRecipes(data);
+      // Mark planned recipes and sort them first
+      const recipesWithPlanned = data.map(recipe => ({
+        ...recipe,
+        isPlannedToday: todayRecipeIds.includes(recipe.id)
+      }));
+      
+      // Sort: today's planned meals first, then by created_at (already sorted)
+      recipesWithPlanned.sort((a, b) => {
+        if (a.isPlannedToday && !b.isPlannedToday) return -1;
+        if (!a.isPlannedToday && b.isPlannedToday) return 1;
+        return 0;
+      });
+      
+      setRecipes(recipesWithPlanned);
     }
     setIsLoading(false);
   };
@@ -214,6 +274,7 @@ export default function Recipes() {
                 isFavorite={recipe.is_favorite}
                 isAiGenerated={recipe.is_ai_generated}
                 imageUrl={recipe.image_url}
+                isPlannedToday={recipe.isPlannedToday}
                 onClick={() => {
                   setSelectedRecipeId(recipe.id);
                   setShowSavedRecipeDetail(true);
