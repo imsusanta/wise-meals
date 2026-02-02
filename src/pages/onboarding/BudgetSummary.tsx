@@ -16,6 +16,8 @@ import { useNavigate } from "react-router-dom";
 import { Wallet, Check, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const budgetIcons: Record<WeeklyBudget, string> = {
   "budget-friendly": "💰",
@@ -26,21 +28,34 @@ const budgetIcons: Record<WeeklyBudget, string> = {
 export function BudgetSummaryStep() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const { profile, prevStep, setWeeklyBudget, reset } = useOnboardingStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const canProceed = profile.weekly_budget !== undefined;
 
   const handleComplete = async () => {
-    if (!canProceed) return;
+    if (!canProceed || !user) return;
 
     setIsSubmitting(true);
     
-    // For now, just complete onboarding locally
-    // TODO: Save to database when auth is implemented
     try {
-      // Simulate brief delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Save profile to database
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          age_range: profile.age_range,
+          dietary_restrictions: profile.dietary_restrictions || [],
+          allergies: profile.allergies || [],
+          cooking_skill: profile.cooking_skill,
+          household_size: profile.household_size,
+          weekly_budget: profile.weekly_budget,
+          cooking_for_one_mode: profile.household_size === "1",
+          onboarding_completed: true,
+        })
+        .eq("user_id", user.id);
+
+      if (error) throw error;
       
       toast({
         title: "Welcome to NourishWise! 🎉",
@@ -51,6 +66,7 @@ export function BudgetSummaryStep() {
       reset();
       navigate("/");
     } catch (error) {
+      console.error("Error saving profile:", error);
       toast({
         title: "Something went wrong",
         description: "Please try again.",
@@ -64,7 +80,7 @@ export function BudgetSummaryStep() {
   return (
     <div className="px-6 py-8 animate-fade-in">
       <div className="max-w-lg mx-auto">
-        <h1 className="text-heading-md font-bold text-foreground mb-2">
+        <h1 className="text-2xl font-bold text-foreground mb-2">
           Budget & Review
         </h1>
         <p className="text-muted-foreground mb-8">
@@ -124,7 +140,7 @@ export function BudgetSummaryStep() {
         {/* Profile Summary */}
         <Card className="p-5 mb-8 bg-muted/50">
           <h3 className="font-semibold mb-4 flex items-center gap-2">
-            <Check className="h-5 w-5 text-success" />
+            <Check className="h-5 w-5 text-primary" />
             Your Profile Summary
           </h3>
           <div className="space-y-3 text-sm">
