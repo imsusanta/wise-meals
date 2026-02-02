@@ -430,6 +430,10 @@ export type Database = {
     }
     Enums: {
       age_range:
+        | "30-34"
+        | "35-39"
+        | "40-44"
+        | "45-49"
         | "50-54"
         | "55-59"
         | "60-64"
@@ -577,7 +581,19 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      age_range: ["50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "80+"],
+      age_range: [
+        "30-34",
+        "35-39",
+        "40-44",
+        "45-49",
+        "50-54",
+        "55-59",
+        "60-64",
+        "65-69",
+        "70-74",
+        "75-79",
+        "80+",
+      ],
       cooking_skill: ["beginner", "comfortable", "experienced"],
       grocery_category: [
         "produce",

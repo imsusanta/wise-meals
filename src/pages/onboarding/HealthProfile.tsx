@@ -11,7 +11,7 @@ import {
 } from "@/types/health-profile";
 import { cn } from "@/lib/utils";
 
-const ageRanges: AgeRange[] = ["50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "80+"];
+const ageRanges: AgeRange[] = ["30-34", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "80+"];
 
 export function HealthProfileStep() {
   const { profile, nextStep, prevStep, setAgeRange, toggleDietaryRestriction } = useOnboardingStore();
