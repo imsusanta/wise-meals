@@ -1,18 +1,13 @@
 import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { 
-  Search, 
   Sparkles, 
   Clock, 
   Users,
-  Star,
-  Filter,
   Loader2,
   Heart,
   PlayCircle
@@ -22,6 +17,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRecipeGenerator, type GeneratedRecipe } from "@/hooks/useRecipeGenerator";
 import { CookingMode } from "@/components/cooking/CookingMode";
 import { RecipeDetailDialog } from "@/components/recipes/RecipeDetailDialog";
+import { RecipeCard } from "@/components/recipes/RecipeCard";
+import { RecipeFilters } from "@/components/recipes/RecipeFilters";
+import { RecipeSearch } from "@/components/recipes/RecipeSearch";
+import { EmptyRecipes } from "@/components/recipes/EmptyRecipes";
 import { cn } from "@/lib/utils";
 
 interface Recipe {
@@ -36,8 +35,13 @@ interface Recipe {
   is_ai_generated: boolean;
 }
 
-const filters = [
-  "All", "Under 15 min", "Heart-Healthy", "Diabetes-Friendly", "High Fiber", "Favorites"
+const filters = ["All", "Favorites", "Under 15 min", "Heart-Healthy", "High Fiber"];
+
+const quickPrompts = [
+  { label: "🍳 Quick breakfast", prompt: "A quick 10-minute breakfast that's nutritious and easy" },
+  { label: "🥗 Light lunch", prompt: "A light and healthy lunch under 20 minutes" },
+  { label: "🍲 Comfort dinner", prompt: "A comforting dinner that's heart-healthy" },
+  { label: "🥤 Smoothie", prompt: "A nutritious smoothie packed with vitamins" },
 ];
 
 export default function Recipes() {
@@ -123,14 +127,6 @@ export default function Recipes() {
     recipe.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getRecipeEmoji = (tags: string[]) => {
-    if (tags.includes("heart-healthy")) return "❤️";
-    if (tags.includes("diabetes-friendly")) return "🩺";
-    if (tags.includes("vegetarian")) return "🥗";
-    if (tags.includes("high-fiber")) return "🌾";
-    return "🍽️";
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <PageHeader 
@@ -138,202 +134,148 @@ export default function Recipes() {
         subtitle="Find your next healthy meal"
       />
 
-      <div className="container px-4 py-6 space-y-6">
-        {/* AI Recipe Generator */}
-        <Button 
-          size="lg" 
-          className="w-full h-14 text-lg font-semibold gap-3 bg-secondary hover:bg-secondary/90"
+      <div className="container px-4 py-6 space-y-5 animate-fade-in">
+        {/* AI Create Button - Hero Style */}
+        <button
           onClick={() => setShowAIDialog(true)}
+          className={cn(
+            "w-full relative overflow-hidden rounded-3xl p-5",
+            "bg-gradient-to-br from-secondary via-secondary/90 to-secondary/70",
+            "shadow-xl shadow-secondary/20",
+            "transition-all duration-300 active:scale-[0.98]",
+            "tap-highlight-none group"
+          )}
         >
-          <Sparkles className="h-5 w-5" />
-          Create Recipe with AI
-        </Button>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.15),transparent_50%)]" />
+          <div className="relative flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <Sparkles className="h-7 w-7 text-white" />
+            </div>
+            <div className="text-left">
+              <h3 className="text-lg font-bold text-white">Create with AI</h3>
+              <p className="text-sm text-white/80">Personalized recipes for you</p>
+            </div>
+          </div>
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+              <Sparkles className="h-5 w-5 text-white animate-pulse" />
+            </div>
+          </div>
+        </button>
 
         {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            placeholder="Search recipes..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 h-14 text-lg"
-          />
-        </div>
+        <RecipeSearch 
+          value={searchQuery} 
+          onChange={setSearchQuery} 
+        />
 
         {/* Filters */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          <Button variant="outline" size="sm" className="shrink-0">
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
-          </Button>
-          {filters.map((filter) => (
-            <Badge
-              key={filter}
-              variant={activeFilter === filter ? "default" : "outline"}
-              className="cursor-pointer whitespace-nowrap px-4 py-2"
-              onClick={() => setActiveFilter(filter)}
-            >
-              {filter}
-            </Badge>
-          ))}
-        </div>
+        <RecipeFilters 
+          filters={filters} 
+          activeFilter={activeFilter} 
+          onFilterChange={setActiveFilter} 
+        />
 
-        {/* Recipe Grid */}
+        {/* Recipe Count */}
+        {!isLoading && filteredRecipes.length > 0 && (
+          <p className="text-sm text-muted-foreground">
+            {filteredRecipes.length} recipe{filteredRecipes.length !== 1 ? 's' : ''} found
+          </p>
+        )}
+
+        {/* Recipe List */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <div className="relative">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            </div>
+            <p className="text-muted-foreground">Loading recipes...</p>
           </div>
         ) : filteredRecipes.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
-              <Sparkles className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">No recipes yet</h3>
-            <p className="text-muted-foreground mb-4">
-              Create your first recipe with AI or browse suggestions.
-            </p>
-            <Button onClick={() => setShowAIDialog(true)}>
-              <Sparkles className="h-4 w-4 mr-2" />
-              Create Recipe
-            </Button>
-          </div>
+          <EmptyRecipes onCreateClick={() => setShowAIDialog(true)} />
         ) : (
-          <div className="grid gap-4">
-            {filteredRecipes.map((recipe) => (
-              <Card 
+          <div className="space-y-4 pb-24">
+            {filteredRecipes.map((recipe, index) => (
+              <div
                 key={recipe.id}
-                className="overflow-hidden cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
-                onClick={() => {
-                  setSelectedRecipeId(recipe.id);
-                  setShowSavedRecipeDetail(true);
-                }}
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
-                <CardContent className="p-0">
-                  <div className="flex">
-                    {/* Recipe Emoji */}
-                    <div className="w-28 h-28 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center text-5xl shrink-0">
-                      {getRecipeEmoji(recipe.health_tags)}
-                    </div>
-                    
-                    {/* Recipe Info */}
-                    <div className="flex-1 p-4 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-semibold text-lg mb-2 line-clamp-2">
-                          {recipe.title}
-                        </h3>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="shrink-0 h-8 w-8"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavorite(recipe.id, recipe.is_favorite);
-                          }}
-                        >
-                          <Heart 
-                            className={cn(
-                              "h-5 w-5 transition-all",
-                              recipe.is_favorite ? "fill-destructive text-destructive scale-110" : "text-muted-foreground"
-                            )} 
-                          />
-                        </Button>
-                      </div>
-                      
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          {recipe.prep_time_minutes} min
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Users className="h-4 w-4" />
-                          {recipe.servings}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          {[...Array(3)].map((_, i) => (
-                            <Star 
-                              key={i} 
-                              className={cn(
-                                "h-3 w-3",
-                                i < recipe.difficulty ? "fill-secondary text-secondary" : "text-muted"
-                              )}
-                            />
-                          ))}
-                        </span>
-                      </div>
-                      
-                      <div className="flex gap-1 flex-wrap">
-                        {recipe.health_tags.slice(0, 2).map((tag) => (
-                          <Badge 
-                            key={tag} 
-                            variant="secondary" 
-                            className="text-xs"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                        {recipe.is_ai_generated && (
-                          <Badge variant="outline" className="text-xs">
-                            <Sparkles className="h-3 w-3 mr-1" />
-                            AI
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                <RecipeCard
+                  id={recipe.id}
+                  title={recipe.title}
+                  description={recipe.description}
+                  prepTime={recipe.prep_time_minutes}
+                  servings={recipe.servings}
+                  difficulty={recipe.difficulty}
+                  healthTags={recipe.health_tags}
+                  isFavorite={recipe.is_favorite}
+                  isAiGenerated={recipe.is_ai_generated}
+                  onClick={() => {
+                    setSelectedRecipeId(recipe.id);
+                    setShowSavedRecipeDetail(true);
+                  }}
+                  onFavoriteToggle={(e) => {
+                    e.stopPropagation();
+                    toggleFavorite(recipe.id, recipe.is_favorite);
+                  }}
+                />
+              </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* AI Recipe Dialog */}
+      {/* AI Recipe Dialog - Modern */}
       <Dialog open={showAIDialog} onOpenChange={setShowAIDialog}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-secondary" />
-              Create Recipe with AI
-            </DialogTitle>
-            <DialogDescription>
-              Describe what you'd like to eat and we'll create a personalized recipe based on your health profile.
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-w-lg rounded-3xl border-border/50 p-0 overflow-hidden">
+          {/* Header with gradient */}
+          <div className="bg-gradient-to-br from-secondary/10 via-secondary/5 to-transparent p-6 pb-4">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3 text-xl">
+                <div className="w-10 h-10 rounded-xl bg-secondary/20 flex items-center justify-center">
+                  <Sparkles className="h-5 w-5 text-secondary" />
+                </div>
+                Create Recipe with AI
+              </DialogTitle>
+              <DialogDescription className="text-base">
+                Describe what you'd like to eat and we'll create a personalized recipe.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
           
-          <div className="space-y-4 pt-4">
+          <div className="p-6 pt-2 space-y-5">
             <Textarea
               placeholder="Example: A quick heart-healthy dinner with salmon, or a simple breakfast I can prep ahead..."
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
-              className="min-h-[120px] text-base"
+              className="min-h-[120px] text-base rounded-2xl border-border/50 resize-none focus:ring-secondary/20"
             />
             
-            <div className="flex flex-wrap gap-2">
-              <Badge 
-                variant="outline" 
-                className="cursor-pointer hover:bg-muted"
-                onClick={() => setAiPrompt("A quick 15-minute lunch that's heart-healthy")}
-              >
-                Quick lunch
-              </Badge>
-              <Badge 
-                variant="outline" 
-                className="cursor-pointer hover:bg-muted"
-                onClick={() => setAiPrompt("A comforting dinner soup that's low in sodium")}
-              >
-                Comfort soup
-              </Badge>
-              <Badge 
-                variant="outline" 
-                className="cursor-pointer hover:bg-muted"
-                onClick={() => setAiPrompt("An easy breakfast I can make ahead for the week")}
-              >
-                Make-ahead breakfast
-              </Badge>
+            {/* Quick prompts */}
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">Quick ideas</p>
+              <div className="flex flex-wrap gap-2">
+                {quickPrompts.map(({ label, prompt }) => (
+                  <button 
+                    key={label}
+                    onClick={() => setAiPrompt(prompt)}
+                    className={cn(
+                      "px-3 py-2 rounded-xl text-sm",
+                      "bg-muted/60 hover:bg-muted transition-colors",
+                      "active:scale-95 tap-highlight-none"
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <Button 
-              className="w-full h-12"
+              className="w-full h-14 rounded-2xl text-lg font-semibold bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70 shadow-lg shadow-secondary/20"
               onClick={handleGenerateRecipe}
               disabled={isGenerating || !aiPrompt.trim()}
             >
@@ -355,7 +297,7 @@ export default function Recipes() {
 
       {/* Generated Recipe Detail */}
       <Dialog open={showRecipeDetail && !!generatedRecipe} onOpenChange={setShowRecipeDetail}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl">
           {generatedRecipe && (
             <>
               <DialogHeader>
@@ -379,17 +321,17 @@ export default function Recipes() {
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2">
                   {generatedRecipe.health_tags.map(tag => (
-                    <Badge key={tag} variant="secondary">{tag}</Badge>
+                    <Badge key={tag} variant="secondary" className="rounded-full">{tag}</Badge>
                   ))}
                 </div>
 
                 {/* Ingredients */}
-                <div>
+                <div className="bg-muted/30 rounded-2xl p-4">
                   <h4 className="font-semibold mb-3">Ingredients</h4>
                   <ul className="space-y-2">
                     {generatedRecipe.ingredients.map((ing, i) => (
                       <li key={i} className="flex items-start gap-2">
-                        <span className="text-primary">•</span>
+                        <span className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
                         <span>
                           <strong>{ing.amount}</strong> {ing.name}
                           {ing.notes && <span className="text-muted-foreground"> ({ing.notes})</span>}
@@ -405,38 +347,38 @@ export default function Recipes() {
                   <ol className="space-y-4">
                     {generatedRecipe.instructions.map((inst) => (
                       <li key={inst.step} className="flex gap-3">
-                        <span className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold shrink-0">
+                        <span className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold shrink-0">
                           {inst.step}
                         </span>
-                        <span className="pt-0.5">{inst.text}</span>
+                        <span className="pt-1">{inst.text}</span>
                       </li>
                     ))}
                   </ol>
                 </div>
 
                 {/* Nutrition */}
-                <div className="bg-muted/50 rounded-lg p-4">
+                <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-2xl p-4">
                   <h4 className="font-semibold mb-3">Nutrition (per serving)</h4>
                   <div className="grid grid-cols-3 gap-3 text-center text-sm">
-                    <div>
-                      <p className="font-bold text-lg">{generatedRecipe.nutrition.calories}</p>
-                      <p className="text-muted-foreground">Calories</p>
+                    <div className="bg-background/60 rounded-xl p-3">
+                      <p className="font-bold text-xl text-primary">{generatedRecipe.nutrition.calories}</p>
+                      <p className="text-muted-foreground text-xs">Calories</p>
                     </div>
-                    <div>
-                      <p className="font-bold text-lg">{generatedRecipe.nutrition.protein_g}g</p>
-                      <p className="text-muted-foreground">Protein</p>
+                    <div className="bg-background/60 rounded-xl p-3">
+                      <p className="font-bold text-xl text-secondary">{generatedRecipe.nutrition.protein_g}g</p>
+                      <p className="text-muted-foreground text-xs">Protein</p>
                     </div>
-                    <div>
-                      <p className="font-bold text-lg">{generatedRecipe.nutrition.fiber_g}g</p>
-                      <p className="text-muted-foreground">Fiber</p>
+                    <div className="bg-background/60 rounded-xl p-3">
+                      <p className="font-bold text-xl text-accent">{generatedRecipe.nutrition.fiber_g}g</p>
+                      <p className="text-muted-foreground text-xs">Fiber</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Storage */}
                 {generatedRecipe.storage_instructions && (
-                  <div className="text-sm text-muted-foreground">
-                    <strong>Storage:</strong> {generatedRecipe.storage_instructions}
+                  <div className="text-sm text-muted-foreground bg-muted/30 rounded-xl p-3">
+                    <strong>💡 Storage:</strong> {generatedRecipe.storage_instructions}
                     {generatedRecipe.freezer_friendly && " ❄️ Freezer-friendly"}
                   </div>
                 )}
@@ -444,7 +386,7 @@ export default function Recipes() {
                 {/* Actions */}
                 <div className="flex flex-col gap-3 pt-2">
                   <Button 
-                    className="w-full h-12 gap-2 bg-secondary hover:bg-secondary/90"
+                    className="w-full h-14 gap-2 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20"
                     onClick={() => setShowCookingMode(true)}
                   >
                     <PlayCircle className="h-5 w-5" />
@@ -453,7 +395,7 @@ export default function Recipes() {
                   <div className="flex gap-3">
                     <Button 
                       variant="outline" 
-                      className="flex-1"
+                      className="flex-1 h-12 rounded-xl"
                       onClick={() => {
                         setShowRecipeDetail(false);
                         clearRecipe();
@@ -462,7 +404,7 @@ export default function Recipes() {
                       Discard
                     </Button>
                     <Button 
-                      className="flex-1"
+                      className="flex-1 h-12 rounded-xl"
                       onClick={handleSaveRecipe}
                     >
                       <Heart className="mr-2 h-4 w-4" />
