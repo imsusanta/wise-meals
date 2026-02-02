@@ -218,6 +218,7 @@ export default function Home() {
         title={`${greeting}${profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}!`}
         subtitle={today}
         showSettings
+        showLogo
       />
 
       <div className="container px-4 py-6 space-y-6">
