@@ -16,11 +16,13 @@ import {
   Loader2,
   Heart,
   ChevronRight,
-  X
+  X,
+  PlayCircle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRecipeGenerator, type GeneratedRecipe } from "@/hooks/useRecipeGenerator";
+import { CookingMode } from "@/components/cooking/CookingMode";
 import { cn } from "@/lib/utils";
 
 interface Recipe {
@@ -49,6 +51,7 @@ export default function Recipes() {
   const [showAIDialog, setShowAIDialog] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [showRecipeDetail, setShowRecipeDetail] = useState(false);
+  const [showCookingMode, setShowCookingMode] = useState(false);
 
   useEffect(() => {
     fetchRecipes();
@@ -435,30 +438,47 @@ export default function Recipes() {
                 )}
 
                 {/* Actions */}
-                <div className="flex gap-3 pt-2">
+                <div className="flex flex-col gap-3 pt-2">
                   <Button 
-                    variant="outline" 
-                    className="flex-1"
-                    onClick={() => {
-                      setShowRecipeDetail(false);
-                      clearRecipe();
-                    }}
+                    className="w-full h-12 gap-2 bg-secondary hover:bg-secondary/90"
+                    onClick={() => setShowCookingMode(true)}
                   >
-                    Discard
+                    <PlayCircle className="h-5 w-5" />
+                    Start Cooking
                   </Button>
-                  <Button 
-                    className="flex-1"
-                    onClick={handleSaveRecipe}
-                  >
-                    <Heart className="mr-2 h-4 w-4" />
-                    Save Recipe
-                  </Button>
+                  <div className="flex gap-3">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => {
+                        setShowRecipeDetail(false);
+                        clearRecipe();
+                      }}
+                    >
+                      Discard
+                    </Button>
+                    <Button 
+                      className="flex-1"
+                      onClick={handleSaveRecipe}
+                    >
+                      <Heart className="mr-2 h-4 w-4" />
+                      Save Recipe
+                    </Button>
+                  </div>
                 </div>
               </div>
             </>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Cooking Mode */}
+      {showCookingMode && generatedRecipe && (
+        <CookingMode 
+          recipe={generatedRecipe} 
+          onClose={() => setShowCookingMode(false)} 
+        />
+      )}
     </div>
   );
 }
