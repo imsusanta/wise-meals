@@ -22,15 +22,15 @@ export function PageHeader({
   const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 border-b border-border/50">
-      <div className="container flex items-center justify-between h-16 px-4">
+    <header className="sticky top-0 z-40 bg-background/70 backdrop-blur-2xl border-b border-border/20 tap-highlight-none">
+      <div className="container flex items-center justify-between h-14 px-4">
         <div className="flex items-center gap-3">
           {showBack && (
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate(-1)}
-              className="shrink-0 -ml-2"
+              className="shrink-0 -ml-2 rounded-xl active:scale-95 transition-transform"
               aria-label="Go back"
             >
               <ArrowLeft className="h-5 w-5" />
@@ -38,22 +38,22 @@ export function PageHeader({
           )}
           
           {showLogo && (
-            <div className="flex items-center gap-2 mr-2">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-md shadow-primary/20">
-                <Leaf className="h-5 w-5 text-primary-foreground" />
+            <div className="flex items-center gap-2 mr-1">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-sm">
+                <Leaf className="h-4 w-4 text-primary-foreground" />
               </div>
             </div>
           )}
           
-          <div>
-            <h1 className="text-xl font-semibold leading-tight">{title}</h1>
+          <div className="min-w-0">
+            <h1 className="text-lg font-semibold leading-tight truncate">{title}</h1>
             {subtitle && (
-              <p className="text-sm text-muted-foreground">{subtitle}</p>
+              <p className="text-xs text-muted-foreground truncate">{subtitle}</p>
             )}
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {rightAction}
           {showSettings && (
             <Button
@@ -61,7 +61,7 @@ export function PageHeader({
               size="icon"
               asChild
               aria-label="Settings"
-              className="rounded-xl hover:bg-muted"
+              className="rounded-xl active:scale-95 transition-transform"
             >
               <Link to="/settings">
                 <Settings className="h-5 w-5" />

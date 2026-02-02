@@ -102,11 +102,11 @@ export default function Settings() {
         showBack
       />
 
-      <div className="container px-4 py-6 space-y-6">
-        {/* User Info */}
-        <Card>
-          <CardContent className="flex items-center gap-4 py-6">
-            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+      <div className="container px-4 py-4 space-y-4 animate-fade-in">
+        {/* User Info - Native Card Style */}
+        <div className="bg-card rounded-2xl border border-border/50 p-4 active:scale-[0.99] transition-transform tap-highlight-none">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
               <User className="h-7 w-7 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
@@ -115,27 +115,28 @@ export default function Settings() {
               </p>
               <p className="text-sm text-muted-foreground truncate">{user?.email || "No email"}</p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Health Profile Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Heart className="h-5 w-5 text-primary" />
-              Health Profile
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <div className="bg-card rounded-2xl border border-border/50 overflow-hidden">
+          <div className="px-4 py-3 border-b border-border/30">
+            <div className="flex items-center gap-2">
+              <Heart className="h-4 w-4 text-primary" />
+              <span className="font-semibold text-sm">Health Profile</span>
+            </div>
+          </div>
+          
+          <div className="p-4 space-y-4">
             {/* Health Conditions */}
             {profile?.dietary_restrictions && profile.dietary_restrictions.length > 0 && (
               <div>
-                <Label className="text-sm text-muted-foreground mb-2 block">
+                <Label className="text-xs text-muted-foreground mb-2 block uppercase tracking-wide">
                   Health Conditions
                 </Label>
                 <div className="flex flex-wrap gap-2">
                   {profile.dietary_restrictions.map((restriction) => (
-                    <Badge key={restriction} variant="secondary">
+                    <Badge key={restriction} variant="secondary" className="rounded-full">
                       {DIETARY_RESTRICTION_LABELS[restriction as DietaryRestriction] || restriction}
                     </Badge>
                   ))}
@@ -146,179 +147,158 @@ export default function Settings() {
             {/* Allergies */}
             {profile?.allergies && profile.allergies.length > 0 && (
               <div>
-                <Label className="text-sm text-muted-foreground mb-2 block">
+                <Label className="text-xs text-muted-foreground mb-2 block uppercase tracking-wide">
                   Allergies
                 </Label>
                 <div className="flex flex-wrap gap-2">
                   {profile.allergies.map((allergy) => (
-                    <Badge key={allergy} variant="destructive">
+                    <Badge key={allergy} variant="destructive" className="rounded-full">
                       {ALLERGY_LABELS[allergy as Allergy] || allergy}
                     </Badge>
                   ))}
                 </div>
               </div>
             )}
+          </div>
 
-            <Link 
-              to="/onboarding"
-              className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <Heart className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <span className="block font-medium">Update Health Profile</span>
-                  <span className="text-sm text-muted-foreground">
-                    Dietary needs, allergies, preferences
-                  </span>
-                </div>
+          {/* List Items */}
+          <Link 
+            to="/onboarding"
+            className="flex items-center justify-between px-4 py-3.5 border-t border-border/30 active:bg-muted/50 transition-colors tap-highlight-none"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Heart className="h-4 w-4 text-primary" />
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </Link>
-
-            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer">
-              <div className="flex items-center gap-3">
-                <Users className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <span className="block font-medium">Family & Caregivers</span>
-                  <span className="text-sm text-muted-foreground">
-                    Share access with loved ones
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              <span className="font-medium text-sm">Update Health Profile</span>
             </div>
-          </CardContent>
-        </Card>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+
+          <div className="flex items-center justify-between px-4 py-3.5 border-t border-border/30 active:bg-muted/50 transition-colors tap-highlight-none cursor-pointer">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+                <Users className="h-4 w-4 text-accent" />
+              </div>
+              <span className="font-medium text-sm">Family & Caregivers</span>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </div>
 
         {/* Medications Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Pill className="h-5 w-5 text-primary" />
-              Medications
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="bg-card rounded-2xl border border-border/50 overflow-hidden">
+          <div className="px-4 py-3 border-b border-border/30">
+            <div className="flex items-center gap-2">
+              <Pill className="h-4 w-4 text-primary" />
+              <span className="font-semibold text-sm">Medications</span>
+            </div>
+          </div>
+          <div className="p-4">
             <MedicationManager />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Accessibility */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Eye className="h-5 w-5 text-primary" />
-              Accessibility
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <Label className="text-base">Text Size</Label>
-                <span className="text-sm text-muted-foreground font-medium">
-                  {fontSize[0]}px
-                </span>
-              </div>
-              <Slider
-                value={fontSize}
-                onValueChange={handleFontSizeChange}
-                min={16}
-                max={22}
-                step={2}
-                className="w-full"
-              />
-              <div className="flex justify-between text-muted-foreground mt-3">
-                <span className="text-sm">A</span>
-                <span className="text-base">A</span>
-                <span className="text-lg">A</span>
-                <span className="text-xl">A</span>
-              </div>
+        <div className="bg-card rounded-2xl border border-border/50 overflow-hidden">
+          <div className="px-4 py-3 border-b border-border/30">
+            <div className="flex items-center gap-2">
+              <Eye className="h-4 w-4 text-primary" />
+              <span className="font-semibold text-sm">Accessibility</span>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <Label className="text-sm font-medium">Text Size</Label>
+              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                {fontSize[0]}px
+              </span>
+            </div>
+            <Slider
+              value={fontSize}
+              onValueChange={handleFontSizeChange}
+              min={16}
+              max={22}
+              step={2}
+              className="w-full"
+            />
+            <div className="flex justify-between text-muted-foreground mt-3">
+              <span className="text-xs">A</span>
+              <span className="text-sm">A</span>
+              <span className="text-base">A</span>
+              <span className="text-lg">A</span>
+            </div>
+          </div>
+        </div>
 
         {/* Notifications */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Bell className="h-5 w-5 text-primary" />
-              Notifications
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-base">Push Notifications</Label>
-                <p className="text-sm text-muted-foreground">
-                  Meal reminders, hydration, and tips
-                </p>
+        <div className="bg-card rounded-2xl border border-border/50 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center">
+                <Bell className="h-4 w-4 text-secondary" />
               </div>
-              <Switch
-                checked={notifications}
-                onCheckedChange={handleNotificationsChange}
-              />
+              <div>
+                <span className="font-medium text-sm block">Push Notifications</span>
+                <span className="text-xs text-muted-foreground">Reminders & tips</span>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+            <Switch
+              checked={notifications}
+              onCheckedChange={handleNotificationsChange}
+            />
+          </div>
+        </div>
 
         {/* Health & Safety */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              Health & Safety
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-base">Food-Drug Warnings</Label>
-                <p className="text-sm text-muted-foreground">
-                  Alert about potential interactions
-                </p>
-              </div>
-              <Switch defaultChecked />
+        <div className="bg-card rounded-2xl border border-border/50 overflow-hidden">
+          <div className="px-4 py-3 border-b border-border/30">
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-primary" />
+              <span className="font-semibold text-sm">Health & Safety</span>
             </div>
-            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors -mx-4 cursor-pointer">
-              <span className="font-medium">Emergency Contact</span>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          </div>
+          
+          <div className="flex items-center justify-between px-4 py-3.5 border-b border-border/30">
+            <div>
+              <span className="font-medium text-sm block">Food-Drug Warnings</span>
+              <span className="text-xs text-muted-foreground">Alert about interactions</span>
             </div>
-          </CardContent>
-        </Card>
+            <Switch defaultChecked />
+          </div>
 
-        {/* Data & Export */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
-              Data & Reports
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" className="w-full h-14">
-              <FileText className="h-5 w-5 mr-2" />
-              Export for Doctor Visit
-            </Button>
-          </CardContent>
-        </Card>
+          <div className="flex items-center justify-between px-4 py-3.5 active:bg-muted/50 transition-colors tap-highlight-none cursor-pointer">
+            <span className="font-medium text-sm">Emergency Contact</span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </div>
+
+        {/* Export */}
+        <Button 
+          variant="outline" 
+          className="w-full h-12 rounded-2xl font-medium active:scale-[0.98] transition-transform"
+        >
+          <FileText className="h-4 w-4 mr-2" />
+          Export for Doctor Visit
+        </Button>
 
         {/* Sign Out */}
         <Button 
-          variant="outline" 
-          className="w-full h-14 text-destructive hover:text-destructive border-destructive/30 hover:border-destructive"
+          variant="ghost" 
+          className="w-full h-12 rounded-2xl text-destructive hover:text-destructive hover:bg-destructive/10 font-medium active:scale-[0.98] transition-transform"
           onClick={handleSignOut}
           disabled={isSigningOut}
         >
           {isSigningOut ? (
-            <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
           ) : (
-            <LogOut className="h-5 w-5 mr-2" />
+            <LogOut className="h-4 w-4 mr-2" />
           )}
           Sign Out
         </Button>
 
         {/* App Version */}
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-center text-xs text-muted-foreground pb-4">
           NourishWise v1.0.0
         </p>
       </div>

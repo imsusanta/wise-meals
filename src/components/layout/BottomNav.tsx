@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Calendar, ChefHat, ShoppingCart, Sparkles } from "lucide-react";
+import { Home, Calendar, ChefHat, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -19,11 +19,12 @@ export function BottomNav() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50">
-      {/* Glassmorphism background */}
-      <div className="absolute inset-0 bg-card/80 backdrop-blur-xl border-t border-border/50 shadow-lg shadow-black/5" />
+    <nav className="fixed bottom-0 left-0 right-0 z-50 tap-highlight-none">
+      {/* Native iOS-style frosted glass */}
+      <div className="absolute inset-0 bg-card/70 backdrop-blur-2xl border-t border-border/30" />
       
-      <div className="relative flex items-center justify-around max-w-lg mx-auto pb-safe">
+      {/* Safe area + content */}
+      <div className="relative flex items-stretch justify-around max-w-lg mx-auto">
         {navItems.map(({ icon: Icon, label, path }) => {
           const isActive = location.pathname === path;
           return (
@@ -31,39 +32,29 @@ export function BottomNav() {
               key={path}
               to={path}
               className={cn(
-                "flex flex-col items-center justify-center py-3 px-5 min-w-[72px] transition-all duration-200 relative group",
+                "flex-1 flex flex-col items-center justify-center py-2 pb-safe transition-all duration-150 active:scale-95 active:opacity-70 select-none",
                 isActive
                   ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                  : "text-muted-foreground"
               )}
               aria-current={isActive ? "page" : undefined}
             >
-              {/* Active indicator pill */}
-              {isActive && (
-                <span className="absolute top-1 left-1/2 -translate-x-1/2 w-12 h-1 rounded-full bg-primary" />
-              )}
-              
-              {/* Icon container with subtle scale on active */}
-              <span className={cn(
-                "relative flex items-center justify-center transition-transform duration-200",
-                isActive ? "scale-110" : "group-hover:scale-105"
+              {/* Icon with active state */}
+              <div className={cn(
+                "relative p-2 rounded-2xl transition-all duration-200",
+                isActive && "bg-primary/10"
               )}>
                 <Icon 
                   className={cn(
-                    "h-6 w-6 transition-all",
-                    isActive && "stroke-[2.5px]"
+                    "h-6 w-6 transition-all duration-200",
+                    isActive ? "stroke-[2.5px]" : "stroke-[1.5px]"
                   )} 
                 />
-                
-                {/* Glow effect for active state */}
-                {isActive && (
-                  <span className="absolute inset-0 blur-lg bg-primary/30 rounded-full" />
-                )}
-              </span>
+              </div>
               
               <span className={cn(
-                "text-xs mt-1.5 font-medium transition-all",
-                isActive && "font-semibold"
+                "text-[10px] mt-0.5 transition-all duration-200",
+                isActive ? "font-semibold" : "font-medium"
               )}>
                 {label}
               </span>

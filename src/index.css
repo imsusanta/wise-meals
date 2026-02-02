@@ -196,4 +196,82 @@
   .mb-safe {
     margin-bottom: max(1rem, env(safe-area-inset-bottom));
   }
+  
+  /* Native app-like utilities */
+  .tap-highlight-none {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .touch-action-pan {
+    touch-action: pan-y;
+  }
+  
+  .select-none {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Native-like active states */
+  .active-scale {
+    @apply transition-transform duration-100 active:scale-[0.97];
+  }
+  
+  .active-dim {
+    @apply transition-opacity duration-100 active:opacity-70;
+  }
+  
+  /* iOS-style card pressed state */
+  .card-pressable {
+    @apply transition-all duration-150 active:scale-[0.98] active:bg-muted/80;
+  }
+  
+  /* Smooth page transition */
+  .page-transition {
+    @apply animate-fade-in;
+  }
+  
+  /* Native scroll behavior */
+  .scroll-native {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+  
+  /* Glass effect for native feel */
+  .glass {
+    @apply bg-background/80 backdrop-blur-xl;
+  }
+  
+  .glass-light {
+    @apply bg-background/60 backdrop-blur-lg;
+  }
+  
+  /* Shimmer loading effect */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--muted-foreground) / 0.1) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    @apply animate-shimmer;
+  }
+}
+
+/* iOS-style overscroll */
+@supports (-webkit-touch-callout: none) {
+  body {
+    overscroll-behavior-y: none;
+  }
+}
+
+/* Native app-like scrollbar (hide on mobile) */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  
+  * {
+    scrollbar-width: none;
+  }
 }

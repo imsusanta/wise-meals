@@ -221,198 +221,185 @@ export default function Home() {
         showLogo
       />
 
-      <div className="container px-4 py-6 space-y-6">
+      <div className="container px-4 py-4 space-y-4 animate-fade-in scroll-native">
         {/* Medication Alert Banner */}
         {hasMedicationWarnings && (
-          <Card 
-            className="bg-warning/10 border-warning/30 cursor-pointer hover:bg-warning/20 transition-colors"
+          <div 
+            className="bg-warning/10 rounded-2xl border border-warning/30 p-4 flex items-center gap-4 active:scale-[0.98] transition-transform cursor-pointer tap-highlight-none"
             onClick={() => setShowMedAlert(true)}
           >
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="w-12 h-12 rounded-full bg-warning/20 flex items-center justify-center shrink-0">
-                <AlertTriangle className="h-6 w-6 text-warning" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-warning-foreground">Medication Food Alerts</h3>
-                <p className="text-sm text-muted-foreground truncate">
-                  {medications.length} medication(s) with food interactions
-                </p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </CardContent>
-          </Card>
+            <div className="w-11 h-11 rounded-full bg-warning/20 flex items-center justify-center shrink-0">
+              <AlertTriangle className="h-5 w-5 text-warning" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-sm">Medication Food Alerts</h3>
+              <p className="text-xs text-muted-foreground truncate">
+                {medications.length} medication(s) with interactions
+              </p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          </div>
         )}
 
         {/* MAIN FEATURE: Health Condition-Based Meal Planning */}
         <div>
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Heart className="h-5 w-5 text-primary" />
+          <h2 className="text-base font-bold mb-3 flex items-center gap-2">
+            <Heart className="h-4 w-4 text-primary" />
             Get Meals For Your Health
           </h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             {healthConditions.map((condition) => (
-              <Card 
+              <div 
                 key={condition.id}
                 className={cn(
-                  "cursor-pointer transition-all border-2",
+                  "rounded-2xl p-3.5 text-center cursor-pointer transition-all tap-highlight-none select-none",
+                  "active:scale-[0.97] border-2",
                   condition.color,
-                  isGenerating && selectedCondition === condition.id && "ring-2 ring-primary"
+                  isGenerating && selectedCondition === condition.id && "ring-2 ring-primary ring-offset-2"
                 )}
                 onClick={() => !isGenerating && handleConditionSelect(condition.id)}
               >
-                <CardContent className="p-4 text-center">
-                  <div className="text-4xl mb-2">{condition.emoji}</div>
-                  <h3 className="font-semibold text-sm mb-1">{condition.label}</h3>
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    {condition.description}
-                  </p>
-                  {isGenerating && selectedCondition === condition.id && (
-                    <Loader2 className="h-4 w-4 animate-spin mx-auto mt-2 text-primary" />
-                  )}
-                </CardContent>
-              </Card>
+                <div className="text-3xl mb-1.5">{condition.emoji}</div>
+                <h3 className="font-semibold text-xs mb-0.5">{condition.label}</h3>
+                <p className="text-[10px] text-muted-foreground line-clamp-2 leading-tight">
+                  {condition.description}
+                </p>
+                {isGenerating && selectedCondition === condition.id && (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mx-auto mt-1.5 text-primary" />
+                )}
+              </div>
             ))}
           </div>
         </div>
 
         {/* Quick Actions Row */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2.5">
           <Button 
             size="lg" 
-            className="h-16 text-base font-semibold gap-2 bg-primary hover:bg-primary/90"
+            className="h-14 text-sm font-semibold gap-2 bg-primary hover:bg-primary/90 rounded-2xl active:scale-[0.97] transition-transform"
             onClick={() => navigate("/plan")}
           >
-            <Sparkles className="h-5 w-5" />
+            <Sparkles className="h-4 w-4" />
             Plan My Week
           </Button>
           <Button 
             size="lg" 
             variant="outline"
-            className="h-16 text-base font-semibold gap-2"
+            className="h-14 text-sm font-semibold gap-2 rounded-2xl active:scale-[0.97] transition-transform"
             onClick={() => navigate("/recipes")}
           >
-            <Flame className="h-5 w-5" />
+            <Flame className="h-4 w-4" />
             Browse Recipes
           </Button>
         </div>
 
         {/* Today's Meals Quick View */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Today's Meals</CardTitle>
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/plan" className="text-primary">
-                  View All <ChevronRight className="h-4 w-4 ml-1" />
-                </Link>
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
+        <div className="bg-card rounded-2xl border border-border/50 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border/30">
+            <span className="font-semibold text-sm">Today's Meals</span>
+            <Button variant="ghost" size="sm" asChild className="h-7 text-xs">
+              <Link to="/plan" className="text-primary">
+                View All <ChevronRight className="h-3 w-3 ml-1" />
+              </Link>
+            </Button>
+          </div>
+          <div className="divide-y divide-border/30">
             <MealSlot type="Breakfast" emoji="🍳" time="8:00 AM" />
             <MealSlot type="Lunch" emoji="🥗" time="12:30 PM" />
             <MealSlot type="Dinner" emoji="🍽️" time="6:00 PM" />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Hydration + Nutrition Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Hydration Tracker */}
-          <Card className="bg-accent/5 border-accent/20">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
-                  <Droplets className="h-6 w-6 text-accent" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Stay Hydrated</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {hydrationGlasses} of 8 glasses
-                  </p>
-                </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
-                  onClick={addGlass}
-                  disabled={isAddingWater}
-                >
-                  {isAddingWater ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                </Button>
+          <div className="bg-accent/5 rounded-2xl border border-accent/20 p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
+                <Droplets className="h-5 w-5 text-accent" />
               </div>
-              <Progress value={hydrationProgress} className="h-3" />
-            </CardContent>
-          </Card>
+              <div className="flex-1">
+                <h3 className="font-semibold text-sm">Stay Hydrated</h3>
+                <p className="text-xs text-muted-foreground">
+                  {hydrationGlasses} of 8 glasses
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-9 w-9 p-0 border-accent text-accent hover:bg-accent hover:text-accent-foreground rounded-xl active:scale-95 transition-transform"
+                onClick={addGlass}
+                disabled={isAddingWater}
+              >
+                {isAddingWater ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+              </Button>
+            </div>
+            <Progress value={hydrationProgress} className="h-2" />
+          </div>
 
           {/* Quick Nutrition Summary */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                  <Activity className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Today's Nutrition</h3>
-                  <p className="text-sm text-muted-foreground">Looking good!</p>
-                </div>
+          <div className="bg-card rounded-2xl border border-border/50 p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <Activity className="h-5 w-5 text-primary" />
               </div>
-              <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                <div className="p-2 rounded bg-primary/10">
-                  <p className="font-bold text-primary">✓</p>
-                  <p className="text-xs text-muted-foreground">Fiber</p>
-                </div>
-                <div className="p-2 rounded bg-primary/10">
-                  <p className="font-bold text-primary">✓</p>
-                  <p className="text-xs text-muted-foreground">Sodium</p>
-                </div>
-                <div className="p-2 rounded bg-secondary/10">
-                  <p className="font-bold text-secondary">⚡</p>
-                  <p className="text-xs text-muted-foreground">Protein</p>
-                </div>
+              <div>
+                <h3 className="font-semibold text-sm">Today's Nutrition</h3>
+                <p className="text-xs text-muted-foreground">Looking good!</p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center text-xs">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <p className="font-bold text-primary text-sm">✓</p>
+                <p className="text-[10px] text-muted-foreground">Fiber</p>
+              </div>
+              <div className="p-2 rounded-xl bg-primary/10">
+                <p className="font-bold text-primary text-sm">✓</p>
+                <p className="text-[10px] text-muted-foreground">Sodium</p>
+              </div>
+              <div className="p-2 rounded-xl bg-secondary/10">
+                <p className="font-bold text-secondary text-sm">⚡</p>
+                <p className="text-[10px] text-muted-foreground">Protein</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Health Tip */}
         {healthTip && (
-          <Card className="bg-primary/5 border-primary/20">
-            <CardContent className="pt-6">
-              <div className="flex gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                  <Lightbulb className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-primary mb-1">
-                    Health Tip
-                  </h3>
-                  <p className="text-sm text-foreground leading-relaxed">
-                    {healthTip.content}
-                  </p>
-                </div>
+          <div className="bg-primary/5 rounded-2xl border border-primary/20 p-4">
+            <div className="flex gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <Lightbulb className="h-5 w-5 text-primary" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <h3 className="font-semibold text-sm text-primary mb-1">
+                  Health Tip
+                </h3>
+                <p className="text-xs text-foreground leading-relaxed">
+                  {healthTip.content}
+                </p>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Add Medications CTA */}
         {medications.length === 0 && (
-          <Card className="border-dashed border-2">
-            <CardContent className="flex items-center gap-4 p-6">
-              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                <Pill className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold">Add Your Medications</h3>
-                <p className="text-sm text-muted-foreground">
-                  Get alerts about food-drug interactions
-                </p>
-              </div>
-              <Button variant="outline" asChild>
-                <Link to="/settings">Add</Link>
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="rounded-2xl border-2 border-dashed border-border p-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+              <Pill className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-sm">Add Your Medications</h3>
+              <p className="text-xs text-muted-foreground">
+                Get alerts about food-drug interactions
+              </p>
+            </div>
+            <Button variant="outline" size="sm" asChild className="rounded-xl h-8 text-xs">
+              <Link to="/settings">Add</Link>
+            </Button>
+          </div>
         )}
       </div>
 
@@ -463,14 +450,14 @@ function MealSlot({ type, emoji, time }: { type: string; emoji: string; time: st
   return (
     <Link 
       to="/plan"
-      className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
+      className="flex items-center gap-3 px-4 py-3 active:bg-muted/50 transition-colors tap-highlight-none"
     >
-      <span className="text-2xl">{emoji}</span>
+      <span className="text-xl">{emoji}</span>
       <div className="flex-1 min-w-0">
-        <p className="font-medium">{type}</p>
+        <p className="font-medium text-sm">{type}</p>
       </div>
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Clock className="h-4 w-4" />
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Clock className="h-3 w-3" />
         {time}
       </div>
     </Link>
