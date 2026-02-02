@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { PageHeader } from "@/components/layout/PageHeader";
+
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -214,11 +214,15 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader 
-        title={`${greeting}${profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}!`}
-        subtitle={today}
-        showLogo
-      />
+      {/* Greeting Header */}
+      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/30">
+        <div className="container px-4 sm:px-5 py-4 sm:py-5">
+          <h1 className="text-xl sm:text-2xl font-bold">
+            {greeting}{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}!
+          </h1>
+          <p className="text-sm text-muted-foreground">{today}</p>
+        </div>
+      </div>
 
       <div className="container px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-5 animate-fade-in scroll-native">
         {/* Medication Alert Banner */}
