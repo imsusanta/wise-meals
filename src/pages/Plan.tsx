@@ -179,6 +179,9 @@ export default function Plan() {
     
     setIsAddingMeal(true);
     
+    // Calculate the actual planned date
+    const plannedDate = format(weekDays[selectedSlot.day], "yyyy-MM-dd");
+    
     // Check if there's already a meal in this slot
     const existingMeal = mealItems.find(
       item => item.day_of_week === selectedSlot.day && item.meal_type === selectedSlot.type
@@ -188,10 +191,10 @@ export default function Plan() {
       // Update existing
       await supabase
         .from("meal_plan_items")
-        .update({ recipe_id: recipe.id, custom_meal_name: null })
+        .update({ recipe_id: recipe.id, custom_meal_name: null, planned_date: plannedDate })
         .eq("id", existingMeal.id);
     } else {
-      // Insert new
+      // Insert new with planned_date
       await supabase
         .from("meal_plan_items")
         .insert({
@@ -199,6 +202,7 @@ export default function Plan() {
           day_of_week: selectedSlot.day,
           meal_type: selectedSlot.type as "breakfast" | "lunch" | "dinner" | "snack",
           recipe_id: recipe.id,
+          planned_date: plannedDate,
         });
     }
     
@@ -217,6 +221,9 @@ export default function Plan() {
     
     setIsAddingMeal(true);
     
+    // Calculate the actual planned date
+    const plannedDate = format(weekDays[selectedSlot.day], "yyyy-MM-dd");
+    
     const existingMeal = mealItems.find(
       item => item.day_of_week === selectedSlot.day && item.meal_type === selectedSlot.type
     );
@@ -224,7 +231,7 @@ export default function Plan() {
     if (existingMeal) {
       await supabase
         .from("meal_plan_items")
-        .update({ custom_meal_name: customMealName.trim(), recipe_id: null })
+        .update({ custom_meal_name: customMealName.trim(), recipe_id: null, planned_date: plannedDate })
         .eq("id", existingMeal.id);
     } else {
       await supabase
@@ -234,6 +241,7 @@ export default function Plan() {
           day_of_week: selectedSlot.day,
           meal_type: selectedSlot.type as "breakfast" | "lunch" | "dinner" | "snack",
           custom_meal_name: customMealName.trim(),
+          planned_date: plannedDate,
         });
     }
     
@@ -253,13 +261,14 @@ export default function Plan() {
     
     setIsGeneratingMeal(true);
     const dayName = format(weekDays[selectedSlot.day], "EEEE");
+    const plannedDate = format(weekDays[selectedSlot.day], "yyyy-MM-dd");
     const prompt = `Create a healthy ${selectedSlot.type} recipe for ${dayName}. Make it nutritious and delicious.`;
     
     // Use autoSave option to get the saved recipe with id
     const result = await generateRecipe(prompt, { autoSave: true });
     
     if (result && 'id' in result) {
-      // Add to meal plan
+      // Add to meal plan with planned_date
       await supabase
         .from("meal_plan_items")
         .insert({
@@ -267,6 +276,7 @@ export default function Plan() {
           day_of_week: selectedSlot.day,
           meal_type: selectedSlot.type as "breakfast" | "lunch" | "dinner" | "snack",
           recipe_id: result.id,
+          planned_date: plannedDate,
         });
       
       clearRecipe();

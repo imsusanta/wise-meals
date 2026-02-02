@@ -181,13 +181,43 @@ export default function Home() {
     
     setIsLoadingMeals(true);
     
-    // Get today's day of week (0 = Sunday)
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    
+    // First try to get meals by specific planned_date (new system)
+    const { data: dateItems } = await supabase
+      .from("meal_plan_items")
+      .select(`
+        id,
+        meal_type,
+        custom_meal_name,
+        is_prepared,
+        meal_plan_id,
+        recipes (title, prep_time_minutes),
+        meal_plans!inner (user_id)
+      `)
+      .eq("planned_date", todayStr)
+      .eq("meal_plans.user_id", user.id);
+    
+    if (dateItems && dateItems.length > 0) {
+      const meals = dateItems.map(item => ({
+        id: item.id,
+        meal_type: item.meal_type,
+        custom_meal_name: item.custom_meal_name,
+        is_prepared: item.is_prepared || false,
+        recipe_title: (item.recipes as any)?.title || null,
+        prep_time: (item.recipes as any)?.prep_time_minutes || null,
+      }));
+      setTodayMeals(meals);
+      setIsLoadingMeals(false);
+      return;
+    }
+    
+    // Fallback: Legacy system using day_of_week
     const today = new Date();
     const weekStart = startOfWeek(today, { weekStartsOn: 0 });
     const dayOfWeek = Math.floor((today.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24));
     const weekStartStr = format(weekStart, "yyyy-MM-dd");
     
-    // Get meal plan for this week
     const { data: plans } = await supabase
       .from("meal_plans")
       .select("id")
@@ -200,7 +230,6 @@ export default function Home() {
       return;
     }
     
-    // Get today's meals
     const { data: items } = await supabase
       .from("meal_plan_items")
       .select(`
