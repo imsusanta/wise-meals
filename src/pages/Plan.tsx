@@ -185,7 +185,6 @@ export default function Plan() {
       <PageHeader 
         title="Meal Plan" 
         subtitle={format(new Date(), "MMMM yyyy")}
-        showSettings
       />
 
       <div className="container px-4 py-6 space-y-6">

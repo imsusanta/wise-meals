@@ -136,7 +136,6 @@ export default function Recipes() {
       <PageHeader 
         title="Recipes" 
         subtitle="Find your next healthy meal"
-        showSettings
       />
 
       <div className="container px-4 py-6 space-y-6">

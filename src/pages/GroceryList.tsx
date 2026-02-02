@@ -201,7 +201,6 @@ export default function GroceryList() {
       <PageHeader 
         title="Shopping List" 
         subtitle={`${checkedCount} of ${totalItems} items`}
-        showSettings
         rightAction={
           <Button variant="ghost" size="icon" aria-label="Share list">
             <Share2 className="h-5 w-5" />

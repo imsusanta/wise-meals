@@ -1,12 +1,11 @@
-import { ArrowLeft, Settings, Leaf } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, Leaf } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 interface PageHeaderProps {
   title: string;
   subtitle?: string;
   showBack?: boolean;
-  showSettings?: boolean;
   showLogo?: boolean;
   rightAction?: React.ReactNode;
 }
@@ -15,7 +14,6 @@ export function PageHeader({
   title, 
   subtitle, 
   showBack = false, 
-  showSettings = false,
   showLogo = false,
   rightAction 
 }: PageHeaderProps) {
@@ -53,22 +51,11 @@ export function PageHeader({
           </div>
         </div>
         
-        <div className="flex items-center gap-1">
-          {rightAction}
-          {showSettings && (
-            <Button
-              variant="ghost"
-              size="icon"
-              asChild
-              aria-label="Settings"
-              className="rounded-xl active:scale-95 transition-transform"
-            >
-              <Link to="/settings">
-                <Settings className="h-5 w-5" />
-              </Link>
-            </Button>
-          )}
-        </div>
+        {rightAction && (
+          <div className="flex items-center gap-1">
+            {rightAction}
+          </div>
+        )}
       </div>
     </header>
   );
