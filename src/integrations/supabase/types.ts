@@ -103,6 +103,7 @@ export type Database = {
           meal_plan_id: string
           meal_type: Database["public"]["Enums"]["meal_type"]
           notes: string | null
+          planned_date: string | null
           recipe_id: string | null
         }
         Insert: {
@@ -115,6 +116,7 @@ export type Database = {
           meal_plan_id: string
           meal_type: Database["public"]["Enums"]["meal_type"]
           notes?: string | null
+          planned_date?: string | null
           recipe_id?: string | null
         }
         Update: {
@@ -127,6 +129,7 @@ export type Database = {
           meal_plan_id?: string
           meal_type?: Database["public"]["Enums"]["meal_type"]
           notes?: string | null
+          planned_date?: string | null
           recipe_id?: string | null
         }
         Relationships: [
@@ -422,6 +425,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_meal_planned_date: {
+        Args: { meal_plan_item_id: string }
+        Returns: string
+      }
       owns_meal_plan: { Args: { _meal_plan_id: string }; Returns: boolean }
       owns_shopping_list: {
         Args: { _shopping_list_id: string }
