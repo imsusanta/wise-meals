@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,32 +8,115 @@ import {
   Droplets, 
   TrendingUp, 
   Lightbulb,
-  ChevronRight 
+  ChevronRight,
+  Loader2
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { useRecipeGenerator } from "@/hooks/useRecipeGenerator";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 
-// Mock data for demo
-const todaysMeals = [
-  { type: "Breakfast", name: "Oatmeal with Berries", time: "8:00 AM", emoji: "🥣" },
-  { type: "Lunch", name: "Mediterranean Salad", time: "12:30 PM", emoji: "🥗" },
-  { type: "Dinner", name: "Grilled Salmon & Veggies", time: "6:00 PM", emoji: "🐟" },
-  { type: "Snack", name: "Apple with Almond Butter", time: "3:00 PM", emoji: "🍎" },
-];
+interface HydrationLog {
+  glasses: number;
+}
 
-const healthTip = {
-  emoji: "💡",
-  title: "Tip of the Day",
-  content: "Adding a handful of leafy greens to your meals can boost your fiber intake and support heart health!",
-};
+interface HealthTip {
+  content: string;
+  category: string;
+}
 
 export default function Home() {
-  const hydrationProgress = 60; // 6 of 10 glasses
+  const { user } = useAuth();
+  const { profile } = useProfile();
+  const { toast } = useToast();
+  const { generateRecipe, isGenerating } = useRecipeGenerator();
+  const [hydrationGlasses, setHydrationGlasses] = useState(0);
+  const [healthTip, setHealthTip] = useState<HealthTip | null>(null);
+  const [isAddingWater, setIsAddingWater] = useState(false);
+
+  const greeting = getGreeting();
+  const today = format(new Date(), "EEEE, MMMM d");
+
+  useEffect(() => {
+    fetchTodaysHydration();
+    fetchHealthTip();
+  }, [user]);
+
+  const fetchTodaysHydration = async () => {
+    if (!user) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const { data } = await supabase
+      .from("hydration_logs")
+      .select("glasses")
+      .eq("user_id", user.id)
+      .gte("logged_at", today.toISOString())
+      .order("logged_at", { ascending: false });
+
+    if (data) {
+      const total = data.reduce((sum: number, log: HydrationLog) => sum + log.glasses, 0);
+      setHydrationGlasses(total);
+    }
+  };
+
+  const fetchHealthTip = async () => {
+    const { data } = await supabase
+      .from("health_tips")
+      .select("content, category")
+      .eq("is_active", true)
+      .limit(10);
+
+    if (data && data.length > 0) {
+      const randomTip = data[Math.floor(Math.random() * data.length)];
+      setHealthTip(randomTip);
+    }
+  };
+
+  const addGlass = async () => {
+    if (!user) return;
+    setIsAddingWater(true);
+
+    const { error } = await supabase
+      .from("hydration_logs")
+      .insert({
+        user_id: user.id,
+        glasses: 1,
+      });
+
+    if (!error) {
+      setHydrationGlasses(prev => prev + 1);
+      if (hydrationGlasses + 1 === 8) {
+        toast({
+          title: "Great job! 🎉",
+          description: "You've reached your daily water goal!",
+        });
+      }
+    }
+    setIsAddingWater(false);
+  };
+
+  const handleQuickSuggestion = async () => {
+    const hour = new Date().getHours();
+    let mealType = "snack";
+    if (hour < 10) mealType = "breakfast";
+    else if (hour < 14) mealType = "lunch";
+    else if (hour < 19) mealType = "dinner";
+
+    await generateRecipe(`Suggest a quick, healthy ${mealType} recipe that's easy to prepare.`);
+  };
+
+  const hydrationProgress = Math.min((hydrationGlasses / 8) * 100, 100);
 
   return (
     <div className="min-h-screen bg-background">
       <PageHeader 
-        title="Good Morning! ☀️" 
-        subtitle="Sunday, February 2"
+        title={`${greeting}${profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}! ☀️`}
+        subtitle={today}
         showSettings
       />
 
@@ -41,8 +125,14 @@ export default function Home() {
         <Button 
           size="lg" 
           className="w-full h-16 text-lg font-semibold gap-3 bg-secondary hover:bg-secondary/90"
+          onClick={handleQuickSuggestion}
+          disabled={isGenerating}
         >
-          <Sparkles className="h-6 w-6" />
+          {isGenerating ? (
+            <Loader2 className="h-6 w-6 animate-spin" />
+          ) : (
+            <Sparkles className="h-6 w-6" />
+          )}
           What Should I Eat Now?
         </Button>
 
@@ -59,48 +149,39 @@ export default function Home() {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {todaysMeals.map((meal) => (
-              <div 
-                key={meal.type}
-                className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
-              >
-                <span className="text-3xl">{meal.emoji}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-muted-foreground">{meal.type}</p>
-                  <p className="font-semibold truncate">{meal.name}</p>
-                </div>
-                <span className="text-sm text-muted-foreground shrink-0">
-                  {meal.time}
-                </span>
-              </div>
-            ))}
+            <MealSlot type="Breakfast" emoji="🍳" time="8:00 AM" />
+            <MealSlot type="Lunch" emoji="🥗" time="12:30 PM" />
+            <MealSlot type="Dinner" emoji="🍽️" time="6:00 PM" />
+            <MealSlot type="Snack" emoji="🍎" time="3:00 PM" />
           </CardContent>
         </Card>
 
         {/* Hydration Tracker */}
-        <Card className="bg-info/5 border-info/20">
+        <Card className="bg-accent/5 border-accent/20">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-full bg-info/20 flex items-center justify-center">
-                <Droplets className="h-6 w-6 text-info" />
+              <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
+                <Droplets className="h-6 w-6 text-accent" />
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold">Stay Hydrated</h3>
                 <p className="text-sm text-muted-foreground">
-                  {Math.round(hydrationProgress / 10)} of 10 glasses today
+                  {hydrationGlasses} of 8 glasses today
                 </p>
               </div>
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="border-info text-info hover:bg-info hover:text-info-foreground"
+                className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+                onClick={addGlass}
+                disabled={isAddingWater}
               >
-                + Add Glass
+                {isAddingWater ? <Loader2 className="h-4 w-4 animate-spin" /> : "+ Add Glass"}
               </Button>
             </div>
             <Progress 
               value={hydrationProgress} 
-              className="h-3 bg-info/20"
+              className="h-3"
             />
           </CardContent>
         </Card>
@@ -109,52 +190,79 @@ export default function Home() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-full bg-success/20 flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-success" />
+              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                <TrendingUp className="h-6 w-6 text-primary" />
               </div>
               <div>
                 <h3 className="font-semibold">This Week's Nutrition</h3>
                 <p className="text-sm text-muted-foreground">
-                  You're doing great! 🎉
+                  Track your progress!
                 </p>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="p-3 rounded-lg bg-success/10">
+              <div className="p-3 rounded-lg bg-primary/10">
                 <p className="text-sm text-muted-foreground">Fiber</p>
-                <p className="text-lg font-bold text-success">Good</p>
+                <p className="text-lg font-bold text-primary">Good</p>
               </div>
-              <div className="p-3 rounded-lg bg-success/10">
+              <div className="p-3 rounded-lg bg-primary/10">
                 <p className="text-sm text-muted-foreground">Sodium</p>
-                <p className="text-lg font-bold text-success">Low</p>
+                <p className="text-lg font-bold text-primary">Low</p>
               </div>
-              <div className="p-3 rounded-lg bg-warning/10">
+              <div className="p-3 rounded-lg bg-secondary/10">
                 <p className="text-sm text-muted-foreground">Protein</p>
-                <p className="text-lg font-bold text-warning">Fair</p>
+                <p className="text-lg font-bold text-secondary">Fair</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Health Tip */}
-        <Card className="bg-primary/5 border-primary/20">
-          <CardContent className="pt-6">
-            <div className="flex gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                <Lightbulb className="h-6 w-6 text-primary" />
+        {healthTip && (
+          <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="pt-6">
+              <div className="flex gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                  <Lightbulb className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-primary mb-1">
+                    Tip of the Day
+                  </h3>
+                  <p className="text-sm text-foreground leading-relaxed">
+                    {healthTip.content}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-primary mb-1">
-                  {healthTip.title}
-                </h3>
-                <p className="text-sm text-foreground leading-relaxed">
-                  {healthTip.content}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
+}
+
+function MealSlot({ type, emoji, time }: { type: string; emoji: string; time: string }) {
+  return (
+    <Link 
+      to="/plan"
+      className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
+    >
+      <span className="text-3xl">{emoji}</span>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-muted-foreground">{type}</p>
+        <p className="text-muted-foreground italic">Tap to plan</p>
+      </div>
+      <span className="text-sm text-muted-foreground shrink-0">
+        {time}
+      </span>
+    </Link>
+  );
+}
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good Morning";
+  if (hour < 17) return "Good Afternoon";
+  return "Good Evening";
 }

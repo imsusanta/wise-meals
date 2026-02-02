@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,16 +15,70 @@ import {
   LogOut,
   ChevronRight,
   Pill,
-  Users
+  Users,
+  Loader2
 } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Settings() {
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const { profile, updateProfile, isLoading } = useProfile();
+  const { toast } = useToast();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  
   const [fontSize, setFontSize] = useState([18]);
   const [notifications, setNotifications] = useState(true);
-  const [medicationReminders, setMedicationReminders] = useState(false);
-  const [foodInteractionWarnings, setFoodInteractionWarnings] = useState(true);
+
+  useEffect(() => {
+    if (profile) {
+      const fontSizeMap: Record<string, number> = {
+        small: 16,
+        medium: 18,
+        large: 20,
+        "extra-large": 22,
+      };
+      setFontSize([fontSizeMap[profile.font_size_preference] || 18]);
+      setNotifications(profile.notifications_enabled);
+    }
+  }, [profile]);
+
+  const handleFontSizeChange = async (value: number[]) => {
+    setFontSize(value);
+    const fontSizeMap: Record<number, string> = {
+      16: "small",
+      18: "medium",
+      20: "large",
+      22: "extra-large",
+    };
+    await updateProfile({ font_size_preference: fontSizeMap[value[0]] || "medium" });
+  };
+
+  const handleNotificationsChange = async (checked: boolean) => {
+    setNotifications(checked);
+    await updateProfile({ notifications_enabled: checked });
+  };
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "See you next time!",
+    });
+    navigate("/auth");
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -33,35 +88,57 @@ export default function Settings() {
       />
 
       <div className="container px-4 py-6 space-y-6">
+        {/* User Info */}
+        <Card>
+          <CardContent className="flex items-center gap-4 py-6">
+            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+              <User className="h-7 w-7 text-primary" />
+            </div>
+            <div>
+              <p className="font-semibold text-lg">
+                {profile?.full_name || "Your Profile"}
+              </p>
+              <p className="text-sm text-muted-foreground">{user?.email}</p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Profile Section */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <User className="h-5 w-5 text-primary" />
-              Profile
+              <Heart className="h-5 w-5 text-primary" />
+              Health Profile
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-1">
             <Link 
-              to="/settings/health-profile"
+              to="/onboarding"
               className="flex items-center justify-between p-4 rounded-lg hover:bg-muted transition-colors"
             >
               <div className="flex items-center gap-3">
                 <Heart className="h-5 w-5 text-muted-foreground" />
-                <span>Health Profile</span>
+                <div>
+                  <span className="block">Update Health Profile</span>
+                  <span className="text-sm text-muted-foreground">
+                    Dietary needs, allergies, preferences
+                  </span>
+                </div>
               </div>
               <ChevronRight className="h-5 w-5 text-muted-foreground" />
             </Link>
-            <Link 
-              to="/settings/caregivers"
-              className="flex items-center justify-between p-4 rounded-lg hover:bg-muted transition-colors"
-            >
+            <div className="flex items-center justify-between p-4 rounded-lg hover:bg-muted transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
                 <Users className="h-5 w-5 text-muted-foreground" />
-                <span>Family & Caregivers</span>
+                <div>
+                  <span className="block">Family & Caregivers</span>
+                  <span className="text-sm text-muted-foreground">
+                    Share access with loved ones
+                  </span>
+                </div>
               </div>
               <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </Link>
+            </div>
           </CardContent>
         </Card>
 
@@ -80,9 +157,9 @@ export default function Settings() {
               </Label>
               <Slider
                 value={fontSize}
-                onValueChange={setFontSize}
-                min={14}
-                max={24}
+                onValueChange={handleFontSizeChange}
+                min={16}
+                max={22}
                 step={2}
                 className="w-full"
               />
@@ -112,7 +189,7 @@ export default function Settings() {
               </div>
               <Switch
                 checked={notifications}
-                onCheckedChange={setNotifications}
+                onCheckedChange={handleNotificationsChange}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -125,10 +202,7 @@ export default function Settings() {
                   </p>
                 </div>
               </div>
-              <Switch
-                checked={medicationReminders}
-                onCheckedChange={setMedicationReminders}
-              />
+              <Switch />
             </div>
           </CardContent>
         </Card>
@@ -149,18 +223,12 @@ export default function Settings() {
                   Alert about potential interactions
                 </p>
               </div>
-              <Switch
-                checked={foodInteractionWarnings}
-                onCheckedChange={setFoodInteractionWarnings}
-              />
+              <Switch defaultChecked />
             </div>
-            <Link 
-              to="/settings/emergency-contact"
-              className="flex items-center justify-between p-4 rounded-lg hover:bg-muted transition-colors -mx-4"
-            >
+            <div className="flex items-center justify-between p-4 rounded-lg hover:bg-muted transition-colors -mx-4 cursor-pointer">
               <span>Emergency Contact</span>
               <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </Link>
+            </div>
           </CardContent>
         </Card>
 
@@ -184,8 +252,14 @@ export default function Settings() {
         <Button 
           variant="outline" 
           className="w-full h-14 text-destructive hover:text-destructive border-destructive/30 hover:border-destructive"
+          onClick={handleSignOut}
+          disabled={isSigningOut}
         >
-          <LogOut className="h-5 w-5 mr-2" />
+          {isSigningOut ? (
+            <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+          ) : (
+            <LogOut className="h-5 w-5 mr-2" />
+          )}
           Sign Out
         </Button>
       </div>
