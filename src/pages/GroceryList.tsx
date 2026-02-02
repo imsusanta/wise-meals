@@ -11,13 +11,16 @@ import {
   DollarSign,
   ShoppingCart,
   Loader2,
-  Trash2
+  Trash2,
+  CalendarDays,
+  RefreshCw
 } from "lucide-react";
 import { GroceryItemSkeleton } from "@/components/ui/loading-skeletons";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { format, startOfWeek, addDays } from "date-fns";
 
 interface GroceryItem {
   id: string;
@@ -58,6 +61,7 @@ export default function GroceryList() {
   const [newItemName, setNewItemName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     fetchActiveList();
@@ -175,6 +179,199 @@ export default function GroceryList() {
     }
   };
 
+  type GroceryCategory = "produce" | "proteins" | "dairy" | "grains" | "pantry" | "frozen" | "beverages" | "other";
+
+  // Categorize ingredient based on name
+  const categorizeIngredient = (name: string): GroceryCategory => {
+    const lowerName = name.toLowerCase();
+    
+    // Produce
+    if (/lettuce|spinach|kale|carrot|tomato|onion|garlic|pepper|cucumber|broccoli|celery|mushroom|potato|zucchini|squash|eggplant|cabbage|beans|peas|corn|avocado|lemon|lime|orange|apple|banana|berry|fruit|vegetable|salad|greens|herb|basil|cilantro|parsley|mint|ginger/.test(lowerName)) {
+      return "produce";
+    }
+    
+    // Proteins
+    if (/chicken|beef|pork|fish|salmon|tuna|shrimp|egg|tofu|turkey|lamb|bacon|sausage|meat|steak|ground|fillet|breast|thigh|wing/.test(lowerName)) {
+      return "proteins";
+    }
+    
+    // Dairy
+    if (/milk|cheese|yogurt|cream|butter|sour cream|cottage|mozzarella|cheddar|parmesan|feta/.test(lowerName)) {
+      return "dairy";
+    }
+    
+    // Grains
+    if (/rice|pasta|bread|flour|oat|cereal|quinoa|barley|wheat|noodle|tortilla|wrap|cracker|grain/.test(lowerName)) {
+      return "grains";
+    }
+    
+    // Pantry
+    if (/oil|vinegar|sauce|soy|salt|pepper|spice|sugar|honey|maple|stock|broth|can|bean|lentil|chickpea|tomato paste|mustard|mayo|ketchup/.test(lowerName)) {
+      return "pantry";
+    }
+    
+    // Frozen
+    if (/frozen|ice cream/.test(lowerName)) {
+      return "frozen";
+    }
+    
+    // Beverages
+    if (/juice|water|soda|coffee|tea|drink|beverage/.test(lowerName)) {
+      return "beverages";
+    }
+    
+    return "other";
+  };
+
+  // Sync ingredients from meal plan
+  const syncFromMealPlan = async () => {
+    if (!user || !activeListId) return;
+    
+    setIsSyncing(true);
+    
+    try {
+      // Get this week's meal plan
+      const weekStart = startOfWeek(new Date(), { weekStartsOn: 0 });
+      const weekStartStr = format(weekStart, "yyyy-MM-dd");
+      
+      const { data: plans } = await supabase
+        .from("meal_plans")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("week_start", weekStartStr)
+        .limit(1);
+      
+      if (!plans || plans.length === 0) {
+        toast({
+          title: "No meal plan found",
+          description: "Create a meal plan first to sync ingredients.",
+          variant: "destructive",
+        });
+        setIsSyncing(false);
+        return;
+      }
+      
+      // Get all meal plan items with recipes
+      const { data: mealItems } = await supabase
+        .from("meal_plan_items")
+        .select(`
+          id,
+          recipes (
+            id,
+            title,
+            ingredients
+          )
+        `)
+        .eq("meal_plan_id", plans[0].id)
+        .not("recipe_id", "is", null);
+      
+      if (!mealItems || mealItems.length === 0) {
+        toast({
+          title: "No recipes in plan",
+          description: "Add recipes to your meal plan first.",
+        });
+        setIsSyncing(false);
+        return;
+      }
+      
+      // Extract all ingredients from recipes
+      const allIngredients: Array<{ name: string; amount: string }> = [];
+      
+      for (const item of mealItems) {
+        const recipe = item.recipes as any;
+        if (recipe?.ingredients && Array.isArray(recipe.ingredients)) {
+          for (const ing of recipe.ingredients) {
+            allIngredients.push({
+              name: ing.name || ing,
+              amount: ing.amount || "1",
+            });
+          }
+        }
+      }
+      
+      if (allIngredients.length === 0) {
+        toast({
+          title: "No ingredients found",
+          description: "The recipes in your plan don't have ingredients.",
+        });
+        setIsSyncing(false);
+        return;
+      }
+      
+      // Combine duplicate ingredients
+      const ingredientMap = new Map<string, string>();
+      for (const ing of allIngredients) {
+        const key = ing.name.toLowerCase().trim();
+        if (ingredientMap.has(key)) {
+          // Just keep the first amount for simplicity
+          continue;
+        }
+        ingredientMap.set(key, ing.amount);
+      }
+      
+      // Get existing item names to avoid duplicates
+      const existingNames = new Set(items.map(i => i.name.toLowerCase().trim()));
+      
+      // Prepare new items
+      const newItems: Array<{
+        shopping_list_id: string;
+        name: string;
+        quantity: string;
+        category: GroceryCategory;
+      }> = [];
+      
+      for (const [name, amount] of ingredientMap) {
+        if (!existingNames.has(name)) {
+          newItems.push({
+            shopping_list_id: activeListId,
+            name: name.charAt(0).toUpperCase() + name.slice(1),
+            quantity: amount,
+            category: categorizeIngredient(name),
+          });
+        }
+      }
+      
+      if (newItems.length === 0) {
+        toast({
+          title: "Already synced",
+          description: "All ingredients are already in your list.",
+        });
+        setIsSyncing(false);
+        return;
+      }
+      
+      // Insert new items
+      const { data: insertedItems, error } = await supabase
+        .from("shopping_list_items")
+        .insert(newItems)
+        .select();
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Update state
+      if (insertedItems) {
+        setItems([...items, ...insertedItems]);
+      }
+      
+      toast({
+        title: "Ingredients synced! 🛒",
+        description: `Added ${newItems.length} ingredients from your meal plan.`,
+      });
+      
+    } catch (error) {
+      console.error("Sync error:", error);
+      toast({
+        title: "Sync failed",
+        description: "Couldn't sync ingredients. Please try again.",
+        variant: "destructive",
+      });
+    }
+    
+    setIsSyncing(false);
+  };
+
   // Group items by section
   const sections = items.reduce((acc, item) => {
     const category = item.category || "other";
@@ -239,6 +436,32 @@ export default function GroceryList() {
       />
 
       <div className="container px-4 py-6 space-y-6">
+        {/* Sync from Meal Plan Button */}
+        <Button 
+          variant="outline"
+          onClick={syncFromMealPlan}
+          disabled={isSyncing}
+          className={cn(
+            "w-full h-14 rounded-2xl gap-2 text-base font-semibold",
+            "border-2 border-dashed border-primary/30",
+            "bg-gradient-to-r from-primary/5 to-primary/10",
+            "hover:border-primary/50 hover:from-primary/10 hover:to-primary/15",
+            "transition-all active:scale-[0.98]"
+          )}
+        >
+          {isSyncing ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Syncing ingredients...
+            </>
+          ) : (
+            <>
+              <CalendarDays className="h-5 w-5" />
+              Sync from This Week's Plan
+            </>
+          )}
+        </Button>
+
         {/* Add Item */}
         <div className="flex gap-2">
           <Input
@@ -246,11 +469,11 @@ export default function GroceryList() {
             value={newItemName}
             onChange={(e) => setNewItemName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addItem()}
-            className="h-14 text-lg"
+            className="h-14 text-lg rounded-xl"
           />
           <Button 
             size="icon" 
-            className="h-14 w-14 shrink-0"
+            className="h-14 w-14 shrink-0 rounded-xl"
             onClick={addItem}
             disabled={isAdding || !newItemName.trim()}
           >
