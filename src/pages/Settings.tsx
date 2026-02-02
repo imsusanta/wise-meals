@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { MedicationManager } from "@/components/medications/MedicationManager";
 import { 
   User, 
   Bell, 
@@ -16,12 +18,14 @@ import {
   ChevronRight,
   Pill,
   Users,
-  Loader2
+  Loader2,
+  Eye
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useToast } from "@/hooks/use-toast";
+import { DIETARY_RESTRICTION_LABELS, ALLERGY_LABELS, type DietaryRestriction, type Allergy } from "@/types/health-profile";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -41,8 +45,8 @@ export default function Settings() {
         large: 20,
         "extra-large": 22,
       };
-      setFontSize([fontSizeMap[profile.font_size_preference] || 18]);
-      setNotifications(profile.notifications_enabled);
+      setFontSize([fontSizeMap[profile.font_size_preference || "medium"] || 18]);
+      setNotifications(profile.notifications_enabled ?? true);
     }
   }, [profile]);
 
@@ -54,6 +58,17 @@ export default function Settings() {
       20: "large",
       22: "extra-large",
     };
+    
+    // Apply to document
+    const fontSizeClass = {
+      16: 'font-scale-sm',
+      18: 'font-scale-md',
+      20: 'font-scale-lg',
+      22: 'font-scale-xl',
+    };
+    document.documentElement.classList.remove('font-scale-sm', 'font-scale-md', 'font-scale-lg', 'font-scale-xl');
+    document.documentElement.classList.add(fontSizeClass[value[0] as keyof typeof fontSizeClass] || 'font-scale-md');
+    
     await updateProfile({ font_size_preference: fontSizeMap[value[0]] || "medium" });
   };
 
@@ -94,16 +109,16 @@ export default function Settings() {
             <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
               <User className="h-7 w-7 text-primary" />
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               <p className="font-semibold text-lg">
-                {profile?.full_name || "Your Profile"}
+                {profile?.full_name || "Guest User"}
               </p>
-              <p className="text-sm text-muted-foreground">{user?.email}</p>
+              <p className="text-sm text-muted-foreground truncate">{user?.email || "No email"}</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Profile Section */}
+        {/* Health Profile Section */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
@@ -111,15 +126,47 @@ export default function Settings() {
               Health Profile
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-1">
+          <CardContent className="space-y-4">
+            {/* Health Conditions */}
+            {profile?.dietary_restrictions && profile.dietary_restrictions.length > 0 && (
+              <div>
+                <Label className="text-sm text-muted-foreground mb-2 block">
+                  Health Conditions
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {profile.dietary_restrictions.map((restriction) => (
+                    <Badge key={restriction} variant="secondary">
+                      {DIETARY_RESTRICTION_LABELS[restriction as DietaryRestriction] || restriction}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Allergies */}
+            {profile?.allergies && profile.allergies.length > 0 && (
+              <div>
+                <Label className="text-sm text-muted-foreground mb-2 block">
+                  Allergies
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {profile.allergies.map((allergy) => (
+                    <Badge key={allergy} variant="destructive">
+                      {ALLERGY_LABELS[allergy as Allergy] || allergy}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <Link 
               to="/onboarding"
-              className="flex items-center justify-between p-4 rounded-lg hover:bg-muted transition-colors"
+              className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
             >
               <div className="flex items-center gap-3">
                 <Heart className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <span className="block">Update Health Profile</span>
+                  <span className="block font-medium">Update Health Profile</span>
                   <span className="text-sm text-muted-foreground">
                     Dietary needs, allergies, preferences
                   </span>
@@ -127,11 +174,12 @@ export default function Settings() {
               </div>
               <ChevronRight className="h-5 w-5 text-muted-foreground" />
             </Link>
-            <div className="flex items-center justify-between p-4 rounded-lg hover:bg-muted transition-colors cursor-pointer">
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
                 <Users className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <span className="block">Family & Caregivers</span>
+                  <span className="block font-medium">Family & Caregivers</span>
                   <span className="text-sm text-muted-foreground">
                     Share access with loved ones
                   </span>
@@ -142,19 +190,35 @@ export default function Settings() {
           </CardContent>
         </Card>
 
+        {/* Medications Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Pill className="h-5 w-5 text-primary" />
+              Medications
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MedicationManager />
+          </CardContent>
+        </Card>
+
         {/* Accessibility */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Type className="h-5 w-5 text-primary" />
+              <Eye className="h-5 w-5 text-primary" />
               Accessibility
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <Label className="text-base mb-4 block">
-                Font Size: {fontSize[0]}px
-              </Label>
+              <div className="flex items-center justify-between mb-4">
+                <Label className="text-base">Text Size</Label>
+                <span className="text-sm text-muted-foreground font-medium">
+                  {fontSize[0]}px
+                </span>
+              </div>
               <Slider
                 value={fontSize}
                 onValueChange={handleFontSizeChange}
@@ -163,9 +227,11 @@ export default function Settings() {
                 step={2}
                 className="w-full"
               />
-              <div className="flex justify-between text-sm text-muted-foreground mt-2">
-                <span>Smaller</span>
-                <span>Larger</span>
+              <div className="flex justify-between text-muted-foreground mt-3">
+                <span className="text-sm">A</span>
+                <span className="text-base">A</span>
+                <span className="text-lg">A</span>
+                <span className="text-xl">A</span>
               </div>
             </div>
           </CardContent>
@@ -184,25 +250,13 @@ export default function Settings() {
               <div>
                 <Label className="text-base">Push Notifications</Label>
                 <p className="text-sm text-muted-foreground">
-                  Meal reminders and tips
+                  Meal reminders, hydration, and tips
                 </p>
               </div>
               <Switch
                 checked={notifications}
                 onCheckedChange={handleNotificationsChange}
               />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Pill className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <Label className="text-base">Medication Reminders</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Reminders with meals
-                  </p>
-                </div>
-              </div>
-              <Switch />
             </div>
           </CardContent>
         </Card>
@@ -225,8 +279,8 @@ export default function Settings() {
               </div>
               <Switch defaultChecked />
             </div>
-            <div className="flex items-center justify-between p-4 rounded-lg hover:bg-muted transition-colors -mx-4 cursor-pointer">
-              <span>Emergency Contact</span>
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors -mx-4 cursor-pointer">
+              <span className="font-medium">Emergency Contact</span>
               <ChevronRight className="h-5 w-5 text-muted-foreground" />
             </div>
           </CardContent>
@@ -262,6 +316,11 @@ export default function Settings() {
           )}
           Sign Out
         </Button>
+
+        {/* App Version */}
+        <p className="text-center text-sm text-muted-foreground">
+          NourishWise v1.0.0
+        </p>
       </div>
     </div>
   );
