@@ -89,9 +89,15 @@ export function useRecipeGenerator() {
 
   const saveRecipeInternal = async (recipe: GeneratedRecipe) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("You must be logged in to save recipes");
+      }
+
       const { data, error } = await supabase
         .from("recipes")
         .insert({
+          user_id: user.id,
           title: recipe.title,
           description: recipe.description,
           prep_time_minutes: recipe.prep_time_minutes,
