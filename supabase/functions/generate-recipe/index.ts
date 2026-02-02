@@ -34,10 +34,11 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `You are a nutrition-focused recipe generator for adults aged 50 and older. 
+    const systemPrompt = `You are a nutrition-focused recipe generator for health-conscious adults aged 30 and older. 
 Create recipes that are:
 - Easy to read with clear, simple instructions
-- Health-conscious and suitable for common conditions in this age group
+- Health-conscious and suitable for busy lifestyles
+- Balanced nutrition with attention to protein, fiber, and vitamins
 - Scaled for ${servings} serving(s)
 ${max_prep_time ? `- Able to be prepared in ${max_prep_time} minutes or less` : ""}
 ${cooking_skill === "beginner" ? "- Simple with basic techniques only" : ""}

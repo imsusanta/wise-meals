@@ -5,13 +5,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Leaf, Mail, Lock, User, Eye, EyeOff, UserRound, ArrowRight } from "lucide-react";
+import { Leaf, Mail, Lock, User, Eye, EyeOff, UserRound, ArrowRight, Apple, Carrot, Salad, Heart, Utensils, Cherry, Fish, Egg, Wheat, Coffee, Soup, Cookie } from "lucide-react";
 import { z } from "zod";
 
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
 
 type AuthMode = "welcome" | "signin" | "signup";
+
+// Floating food icons for background decoration
+const FloatingIcon = ({ 
+  icon: Icon, 
+  className, 
+  delay = 0 
+}: { 
+  icon: React.ElementType; 
+  className: string; 
+  delay?: number;
+}) => (
+  <div 
+    className={`absolute text-white/10 ${className}`}
+    style={{ 
+      animation: `float 6s ease-in-out infinite`,
+      animationDelay: `${delay}s`
+    }}
+  >
+    <Icon className="w-full h-full" strokeWidth={1.5} />
+  </div>
+);
 
 export default function Auth() {
   const [mode, setMode] = useState<AuthMode>("welcome");
@@ -207,26 +228,58 @@ export default function Auth() {
     setIsGuestLoading(false);
   };
 
-  // Welcome Screen
+  // Welcome Screen with beautiful food graphics
   if (mode === "welcome") {
     return (
-      <div className="min-h-screen bg-primary flex flex-col">
+      <div className="min-h-screen bg-gradient-to-b from-primary via-primary to-primary/90 flex flex-col relative overflow-hidden">
+        {/* Floating Food Icons Background */}
+        <style>{`
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+          }
+        `}</style>
+        
+        {/* Top left cluster */}
+        <FloatingIcon icon={Apple} className="top-12 left-6 w-10 h-10" delay={0} />
+        <FloatingIcon icon={Carrot} className="top-28 left-16 w-8 h-8" delay={1.5} />
+        <FloatingIcon icon={Coffee} className="top-8 left-28 w-7 h-7" delay={0.8} />
+        
+        {/* Top right cluster */}
+        <FloatingIcon icon={Salad} className="top-16 right-8 w-12 h-12" delay={0.5} />
+        <FloatingIcon icon={Cherry} className="top-32 right-24 w-6 h-6" delay={2} />
+        <FloatingIcon icon={Egg} className="top-10 right-32 w-7 h-7" delay={1.2} />
+        
+        {/* Middle left */}
+        <FloatingIcon icon={Fish} className="top-1/3 left-4 w-9 h-9" delay={1.8} />
+        <FloatingIcon icon={Wheat} className="top-1/2 left-8 w-8 h-8" delay={0.3} />
+        
+        {/* Middle right */}
+        <FloatingIcon icon={Soup} className="top-1/3 right-6 w-10 h-10" delay={2.5} />
+        <FloatingIcon icon={Cookie} className="top-1/2 right-12 w-7 h-7" delay={1} />
+        
+        {/* Bottom scattered */}
+        <FloatingIcon icon={Utensils} className="bottom-48 left-12 w-8 h-8" delay={0.7} />
+        <FloatingIcon icon={Heart} className="bottom-56 right-10 w-6 h-6" delay={1.5} />
+        <FloatingIcon icon={Apple} className="bottom-64 left-28 w-7 h-7" delay={2.2} />
+        <FloatingIcon icon={Carrot} className="bottom-52 right-28 w-8 h-8" delay={0.4} />
+
         {/* App Icon & Branding */}
-        <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
-          <div className="w-24 h-24 bg-white/20 rounded-3xl flex items-center justify-center mb-6 backdrop-blur-sm">
-            <Leaf className="h-14 w-14 text-white" />
+        <div className="flex-1 flex flex-col items-center justify-center px-8 text-center relative z-10">
+          <div className="w-28 h-28 bg-white/20 rounded-[2rem] flex items-center justify-center mb-8 backdrop-blur-md shadow-2xl border border-white/20">
+            <Leaf className="h-16 w-16 text-white" strokeWidth={1.5} />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-3">NourishWise</h1>
-          <p className="text-xl text-white/80 max-w-xs">
-            Health-focused meal planning made simple
+          <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">NourishWise</h1>
+          <p className="text-xl text-white/90 max-w-sm leading-relaxed">
+            Smart meal planning for a healthier, happier you
           </p>
         </div>
 
         {/* Bottom Actions */}
-        <div className="px-6 pb-12 space-y-4">
+        <div className="px-6 pb-12 space-y-4 relative z-10">
           <Button 
             size="lg"
-            className="w-full h-16 text-lg font-semibold bg-white text-primary hover:bg-white/90 rounded-2xl"
+            className="w-full h-16 text-lg font-semibold bg-white text-primary hover:bg-white/95 rounded-2xl shadow-lg shadow-black/10"
             onClick={() => setMode("signup")}
           >
             Get Started
@@ -254,7 +307,7 @@ export default function Auth() {
           <Button 
             variant="outline"
             size="lg"
-            className="w-full h-14 text-lg font-medium border-2 border-white/30 bg-transparent text-white hover:bg-white/10 rounded-2xl"
+            className="w-full h-14 text-lg font-medium border-2 border-white/30 bg-white/5 text-white hover:bg-white/10 rounded-2xl backdrop-blur-sm"
             onClick={handleGuestAccess}
             disabled={isGuestLoading}
           >
