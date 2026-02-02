@@ -14,6 +14,8 @@ interface RecipeCardProps {
   isAiGenerated: boolean;
   onClick: () => void;
   onFavoriteToggle: (e: React.MouseEvent) => void;
+  index?: number;
+  totalCards?: number;
 }
 
 const getRecipeGradient = (tags: string[]) => {
@@ -46,44 +48,55 @@ export function RecipeCard({
   isAiGenerated,
   onClick,
   onFavoriteToggle,
+  index = 0,
+  totalCards = 1,
 }: RecipeCardProps) {
+  // Stack effect: cards peek from behind
+  const isStacked = index < 3 && totalCards > 1;
+  const stackOffset = isStacked ? index * 4 : 0;
+  const stackScale = isStacked ? 1 - index * 0.02 : 1;
+  
   return (
     <div
       onClick={onClick}
+      style={{
+        transform: `translateY(${stackOffset}px) scale(${stackScale})`,
+        zIndex: totalCards - index,
+      }}
       className={cn(
-        "group relative overflow-hidden rounded-3xl",
+        "group relative overflow-hidden rounded-[20px] sm:rounded-3xl",
         "bg-gradient-to-br",
         getRecipeGradient(healthTags),
         "border border-border/40 hover:border-primary/30",
         "transition-all duration-300 ease-out",
-        "hover:shadow-lg hover:shadow-primary/5",
+        "hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1",
         "active:scale-[0.98] cursor-pointer",
-        "tap-highlight-none"
+        "tap-highlight-none touch-manipulation"
       )}
     >
       {/* Glass overlay */}
-      <div className="absolute inset-0 bg-card/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-card/70 backdrop-blur-sm" />
       
       {/* Content */}
-      <div className="relative p-5">
-        <div className="flex gap-4">
-          {/* Emoji Icon */}
-          <div className="shrink-0 w-16 h-16 rounded-2xl bg-background/80 backdrop-blur flex items-center justify-center text-3xl shadow-sm border border-border/20">
+      <div className="relative p-4 sm:p-5">
+        <div className="flex gap-3 sm:gap-4">
+          {/* Emoji Icon - Responsive size */}
+          <div className="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-background/80 backdrop-blur flex items-center justify-center text-2xl sm:text-3xl shadow-sm border border-border/20">
             {getRecipeEmoji(healthTags)}
           </div>
           
           {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2 mb-1">
-              <h3 className="font-bold text-lg leading-tight line-clamp-2 text-foreground">
+              <h3 className="font-bold text-base sm:text-lg leading-tight line-clamp-2 text-foreground">
                 {title}
               </h3>
               <button
                 onClick={onFavoriteToggle}
                 className={cn(
-                  "shrink-0 p-2 -m-2 rounded-full transition-all duration-200",
-                  "hover:bg-background/50 active:scale-90",
-                  isFavorite && "animate-pulse-ring"
+                  "shrink-0 w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center rounded-full transition-all duration-200",
+                  "bg-background/50 hover:bg-background/80 active:scale-90",
+                  "touch-manipulation"
                 )}
                 aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
               >
@@ -92,27 +105,27 @@ export function RecipeCard({
                     "h-5 w-5 transition-all duration-300",
                     isFavorite 
                       ? "fill-destructive text-destructive scale-110" 
-                      : "text-muted-foreground hover:text-destructive"
+                      : "text-muted-foreground"
                   )} 
                 />
               </button>
             </div>
             
             {description && (
-              <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
+              <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1 mb-2">
                 {description}
               </p>
             )}
             
-            {/* Meta Info */}
-            <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
-              <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4" />
-                <span className="font-medium">{prepTime} min</span>
+            {/* Meta Info - Responsive */}
+            <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
+              <span className="flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="font-medium">{prepTime}m</span>
               </span>
               <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-              <span className="flex items-center gap-1.5">
-                <Users className="h-4 w-4" />
+              <span className="flex items-center gap-1">
+                <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="font-medium">{servings}</span>
               </span>
               <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
@@ -129,13 +142,13 @@ export function RecipeCard({
               </span>
             </div>
             
-            {/* Tags */}
-            <div className="flex gap-1.5 flex-wrap">
+            {/* Tags - Responsive */}
+            <div className="flex gap-1 sm:gap-1.5 flex-wrap">
               {healthTags.slice(0, 2).map((tag) => (
                 <Badge 
                   key={tag} 
                   variant="secondary" 
-                  className="text-xs font-medium px-2.5 py-0.5 bg-background/70 backdrop-blur-sm border-0"
+                  className="text-[10px] sm:text-xs font-medium px-2 sm:px-2.5 py-0.5 bg-background/70 backdrop-blur-sm border-0 rounded-full"
                 >
                   {tag}
                 </Badge>
@@ -143,9 +156,9 @@ export function RecipeCard({
               {isAiGenerated && (
                 <Badge 
                   variant="outline" 
-                  className="text-xs font-medium px-2.5 py-0.5 bg-secondary/10 border-secondary/20 text-secondary"
+                  className="text-[10px] sm:text-xs font-medium px-2 sm:px-2.5 py-0.5 bg-secondary/10 border-secondary/20 text-secondary rounded-full"
                 >
-                  <Sparkles className="h-3 w-3 mr-1" />
+                  <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
                   AI
                 </Badge>
               )}

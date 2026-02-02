@@ -134,31 +134,29 @@ export default function Recipes() {
         subtitle="Find your next healthy meal"
       />
 
-      <div className="container px-4 py-6 space-y-5 animate-fade-in">
+      <div className="container px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-5 animate-fade-in">
         {/* AI Create Button - Hero Style */}
         <button
           onClick={() => setShowAIDialog(true)}
           className={cn(
-            "w-full relative overflow-hidden rounded-3xl p-5",
+            "w-full relative overflow-hidden rounded-2xl sm:rounded-3xl p-4 sm:p-5",
             "bg-gradient-to-br from-secondary via-secondary/90 to-secondary/70",
-            "shadow-xl shadow-secondary/20",
+            "shadow-lg sm:shadow-xl shadow-secondary/20",
             "transition-all duration-300 active:scale-[0.98]",
-            "tap-highlight-none group"
+            "tap-highlight-none touch-manipulation group"
           )}
         >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.15),transparent_50%)]" />
-          <div className="relative flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <Sparkles className="h-7 w-7 text-white" />
+          <div className="relative flex items-center gap-3 sm:gap-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <Sparkles className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
             </div>
-            <div className="text-left">
-              <h3 className="text-lg font-bold text-white">Create with AI</h3>
-              <p className="text-sm text-white/80">Personalized recipes for you</p>
+            <div className="text-left flex-1">
+              <h3 className="text-base sm:text-lg font-bold text-white">Create with AI</h3>
+              <p className="text-xs sm:text-sm text-white/80">Personalized recipes for you</p>
             </div>
-          </div>
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-              <Sparkles className="h-5 w-5 text-white animate-pulse" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/20 flex items-center justify-center">
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
             </div>
           </div>
         </button>
@@ -196,34 +194,41 @@ export default function Recipes() {
         ) : filteredRecipes.length === 0 ? (
           <EmptyRecipes onCreateClick={() => setShowAIDialog(true)} />
         ) : (
-          <div className="space-y-4 pb-24">
-            {filteredRecipes.map((recipe, index) => (
-              <div
-                key={recipe.id}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <RecipeCard
-                  id={recipe.id}
-                  title={recipe.title}
-                  description={recipe.description}
-                  prepTime={recipe.prep_time_minutes}
-                  servings={recipe.servings}
-                  difficulty={recipe.difficulty}
-                  healthTags={recipe.health_tags}
-                  isFavorite={recipe.is_favorite}
-                  isAiGenerated={recipe.is_ai_generated}
-                  onClick={() => {
-                    setSelectedRecipeId(recipe.id);
-                    setShowSavedRecipeDetail(true);
+          <div className="relative pb-28">
+            {/* Stacked cards container */}
+            <div className="space-y-3 sm:space-y-4">
+              {filteredRecipes.map((recipe, index) => (
+                <div
+                  key={recipe.id}
+                  className="animate-fade-in"
+                  style={{ 
+                    animationDelay: `${Math.min(index * 40, 300)}ms`,
                   }}
-                  onFavoriteToggle={(e) => {
-                    e.stopPropagation();
-                    toggleFavorite(recipe.id, recipe.is_favorite);
-                  }}
-                />
-              </div>
-            ))}
+                >
+                  <RecipeCard
+                    id={recipe.id}
+                    title={recipe.title}
+                    description={recipe.description}
+                    prepTime={recipe.prep_time_minutes}
+                    servings={recipe.servings}
+                    difficulty={recipe.difficulty}
+                    healthTags={recipe.health_tags}
+                    isFavorite={recipe.is_favorite}
+                    isAiGenerated={recipe.is_ai_generated}
+                    index={index}
+                    totalCards={filteredRecipes.length}
+                    onClick={() => {
+                      setSelectedRecipeId(recipe.id);
+                      setShowSavedRecipeDetail(true);
+                    }}
+                    onFavoriteToggle={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(recipe.id, recipe.is_favorite);
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
