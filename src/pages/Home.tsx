@@ -217,7 +217,6 @@ export default function Home() {
       <PageHeader 
         title={`${greeting}${profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}!`}
         subtitle={today}
-        showSettings
         showLogo
       />
 
