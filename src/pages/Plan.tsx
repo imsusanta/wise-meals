@@ -328,29 +328,29 @@ export default function Plan() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-28">
         <PageHeader 
           title="Meal Plan" 
           subtitle="Loading..."
         />
-        <div className="container px-4 py-6 space-y-5 animate-fade-in">
+        <div className="px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-5 animate-fade-in max-w-lg mx-auto">
           {/* Week navigation skeleton */}
           <div className="flex items-center justify-between">
-            <div className="w-10 h-10 shimmer rounded-lg" />
+            <div className="w-11 h-11 shimmer rounded-xl" />
             <div className="w-24 h-10 shimmer rounded-full" />
-            <div className="w-10 h-10 shimmer rounded-lg" />
+            <div className="w-11 h-11 shimmer rounded-xl" />
           </div>
           
           {/* Calendar skeleton */}
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 scrollbar-none -mx-3 px-3 sm:mx-0 sm:px-0">
             {[...Array(7)].map((_, i) => (
               <CalendarDaySkeleton key={i} />
             ))}
           </div>
           
           {/* Daily summary skeleton */}
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/50">
-            <div className="w-12 h-12 shimmer rounded-xl" />
+          <div className="flex items-center gap-3 p-3.5 sm:p-4 rounded-2xl bg-muted/50">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 shimmer rounded-xl flex-shrink-0" />
             <div className="flex-1 space-y-2">
               <div className="h-5 w-32 shimmer rounded" />
               <div className="h-4 w-48 shimmer rounded" />
@@ -358,7 +358,7 @@ export default function Plan() {
           </div>
           
           {/* Meal slots skeleton */}
-          <div className="space-y-3">
+          <div className="space-y-2.5 sm:space-y-3">
             {[...Array(4)].map((_, i) => (
               <MealSlotSkeleton key={i} />
             ))}
@@ -369,20 +369,20 @@ export default function Plan() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-28">
       <PageHeader 
         title="Meal Plan" 
         subtitle={format(currentWeekStart, "MMMM yyyy")}
       />
 
-      <div className="container px-4 py-6 space-y-5 animate-fade-in">
+      <div className="px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-5 animate-fade-in max-w-lg mx-auto">
         {/* Week Navigation */}
         <div className="flex items-center justify-between">
           <Button
             variant="ghost"
             size="icon"
             onClick={goToPreviousWeek}
-            className="h-10 w-10"
+            className="h-11 w-11 rounded-xl active:scale-95 tap-highlight-none"
           >
             <ChevronLeft className="h-5 w-5" />
           </Button>
@@ -390,9 +390,9 @@ export default function Plan() {
           <button
             onClick={goToCurrentWeek}
             className={cn(
-              "px-4 py-2 rounded-full text-sm font-medium transition-colors",
+              "px-4 py-2.5 rounded-full text-sm font-medium transition-all active:scale-95 tap-highlight-none touch-manipulation",
               isCurrentWeek 
-                ? "bg-primary text-primary-foreground" 
+                ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" 
                 : "bg-muted hover:bg-muted/80"
             )}
           >
@@ -403,14 +403,14 @@ export default function Plan() {
             variant="ghost"
             size="icon"
             onClick={goToNextWeek}
-            className="h-10 w-10"
+            className="h-11 w-11 rounded-xl active:scale-95 tap-highlight-none"
           >
             <ChevronRight className="h-5 w-5" />
           </Button>
         </div>
 
-        {/* Week Calendar */}
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+        {/* Week Calendar - Horizontal Scroll */}
+        <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 scrollbar-none -mx-3 px-3 sm:mx-0 sm:px-0 scroll-native">
           {weekDays.map((date, index) => {
             const isSelected = format(date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd");
             const isToday = format(date, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
@@ -422,24 +422,24 @@ export default function Plan() {
                 key={index}
                 onClick={() => setSelectedDate(date)}
                 className={cn(
-                  "flex flex-col items-center justify-center min-w-[56px] h-20 rounded-2xl transition-all",
+                  "flex flex-col items-center justify-center flex-1 min-w-[44px] sm:min-w-[52px] py-2.5 sm:py-3 rounded-xl sm:rounded-2xl transition-all",
                   "tap-highlight-none touch-manipulation active:scale-95",
                   isSelected
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
                     : isToday
                     ? "bg-primary/10 text-primary border-2 border-primary"
-                    : "bg-card border border-border hover:border-primary/50"
+                    : "bg-card border border-border"
                 )}
               >
-                <span className="text-xs font-medium opacity-80">{format(date, "EEE")}</span>
-                <span className="text-xl font-bold">{format(date, "d")}</span>
+                <span className="text-[10px] sm:text-xs font-medium opacity-80">{format(date, "EEE")}</span>
+                <span className="text-lg sm:text-xl font-bold">{format(date, "d")}</span>
                 {dayMealCount > 0 && (
-                  <div className="flex gap-0.5 mt-1">
+                  <div className="flex gap-0.5 mt-0.5 sm:mt-1">
                     {[...Array(Math.min(dayMealCount, 4))].map((_, i) => (
                       <div
                         key={i}
                         className={cn(
-                          "w-1.5 h-1.5 rounded-full",
+                          "w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full",
                           i < preparedCount 
                             ? isSelected ? "bg-white" : "bg-primary" 
                             : isSelected ? "bg-white/40" : "bg-muted-foreground/30"
@@ -455,37 +455,37 @@ export default function Plan() {
 
         {/* Daily Summary */}
         <div className={cn(
-          "flex items-center gap-4 p-4 rounded-2xl",
+          "flex items-center gap-3 p-3.5 sm:p-4 rounded-2xl",
           dayMeals.length > 0 && dayMeals.every(m => m.is_prepared)
             ? "bg-primary/10 border border-primary/20"
             : "bg-muted/50"
         )}>
           <div className={cn(
-            "w-12 h-12 rounded-xl flex items-center justify-center",
+            "w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0",
             dayMeals.length > 0 && dayMeals.every(m => m.is_prepared)
               ? "bg-primary text-primary-foreground"
               : "bg-muted"
           )}>
             {dayMeals.length > 0 && dayMeals.every(m => m.is_prepared) ? (
-              <Check className="h-6 w-6" />
+              <Check className="h-5 w-5 sm:h-6 sm:w-6" />
             ) : (
-              <Utensils className="h-6 w-6 text-muted-foreground" />
+              <Utensils className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
             )}
           </div>
-          <div className="flex-1">
-            <p className="font-semibold">
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm sm:text-base truncate">
               {format(selectedDate, "EEEE, MMM d")}
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {dayMeals.length > 0 
                 ? `${dayMeals.filter(m => m.is_prepared).length} of ${dayMeals.length} meals prepared`
-                : "No meals planned yet - tap to add"}
+                : "No meals yet - tap to add"}
             </p>
           </div>
         </div>
 
         {/* Meal Slots */}
-        <div className="space-y-3">
+        <div className="space-y-2.5 sm:space-y-3">
           {mealSlots.map((slot) => {
             const meal = getMealForSlot(slot);
             return (
@@ -500,41 +500,41 @@ export default function Plan() {
                   !meal && "border-dashed hover:border-primary/50 hover:bg-muted/30"
                 )}
               >
-                <CardContent className="flex items-center gap-4 p-4">
+                <CardContent className="flex items-center gap-3 p-3 sm:p-4">
                   <div className={cn(
-                    "w-14 h-14 rounded-xl flex items-center justify-center text-2xl",
+                    "w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-xl sm:text-2xl flex-shrink-0",
                     meal ? "bg-muted" : "bg-muted/50"
                   )}>
                     {mealEmojis[slot]}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-muted-foreground font-medium">{mealLabels[slot]}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground font-medium">{mealLabels[slot]}</p>
                     {meal ? (
                       <div>
-                        <p className="font-semibold truncate">
+                        <p className="font-semibold text-sm sm:text-base truncate">
                           {meal.recipes?.title || meal.custom_meal_name || "Unnamed meal"}
                         </p>
                         {meal.recipes?.prep_time_minutes && (
-                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                            <Clock className="h-3 w-3" />
+                          <p className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                            <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                             {meal.recipes.prep_time_minutes} min
                           </p>
                         )}
                       </div>
                     ) : (
-                      <p className="text-muted-foreground flex items-center gap-1.5">
-                        <Plus className="h-4 w-4" />
-                        Tap to add meal
+                      <p className="text-sm sm:text-base text-muted-foreground flex items-center gap-1.5">
+                        <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        Tap to add
                       </p>
                     )}
                   </div>
                   {meal && (
-                    <div className="flex gap-1">
+                    <div className="flex gap-1.5 flex-shrink-0">
                       <Button 
                         size="icon" 
                         variant={meal.is_prepared ? "default" : "ghost"}
                         className={cn(
-                          "h-10 w-10 rounded-xl",
+                          "h-10 w-10 sm:h-11 sm:w-11 rounded-xl",
                           meal.is_prepared && "bg-primary"
                         )}
                         onClick={(e) => {
@@ -543,20 +543,20 @@ export default function Plan() {
                         }}
                       >
                         <Check className={cn(
-                          "h-5 w-5",
+                          "h-4 w-4 sm:h-5 sm:w-5",
                           meal.is_prepared ? "text-white" : "text-primary"
                         )} />
                       </Button>
                       <Button 
                         size="icon" 
                         variant="ghost" 
-                        className="h-10 w-10 rounded-xl"
+                        className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl"
                         onClick={(e) => {
                           e.stopPropagation();
                           removeMeal(meal.id);
                         }}
                       >
-                        <X className="h-5 w-5 text-muted-foreground" />
+                        <X className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                       </Button>
                     </div>
                   )}
@@ -567,18 +567,18 @@ export default function Plan() {
         </div>
       </div>
 
-      {/* Add Meal Dialog */}
+      {/* Add Meal Dialog - Mobile Optimized */}
       <Dialog open={showAddMealDialog} onOpenChange={setShowAddMealDialog}>
-        <DialogContent className="max-w-md rounded-3xl p-0 overflow-hidden max-h-[85vh]">
-          <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-5">
+        <DialogContent className="w-[calc(100%-24px)] sm:max-w-md rounded-2xl sm:rounded-3xl p-0 overflow-hidden max-h-[80vh] sm:max-h-[85vh]">
+          <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4 sm:p-5">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-3 text-xl">
-                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-xl">
+              <DialogTitle className="flex items-center gap-2.5 sm:gap-3 text-lg sm:text-xl">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/20 flex items-center justify-center text-lg sm:text-xl">
                   {selectedSlot ? mealEmojis[selectedSlot.type] : "🍽️"}
                 </div>
                 Add {selectedSlot ? mealLabels[selectedSlot.type] : "Meal"}
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-sm">
                 {selectedSlot && weekDays[selectedSlot.day] && 
                   format(weekDays[selectedSlot.day], "EEEE, MMMM d")
                 }
@@ -586,21 +586,21 @@ export default function Plan() {
             </DialogHeader>
           </div>
           
-          <div className="p-5 space-y-5">
+          <div className="p-4 sm:p-5 space-y-4 sm:space-y-5 overflow-y-auto">
             {/* AI Generate */}
             <Button
               onClick={generateMealForSlot}
               disabled={isGeneratingMeal || isGenerating}
-              className="w-full h-14 rounded-2xl gap-3 bg-gradient-to-r from-secondary to-secondary/80"
+              className="w-full h-12 sm:h-14 rounded-xl sm:rounded-2xl gap-2.5 sm:gap-3 bg-gradient-to-r from-secondary to-secondary/80 text-sm sm:text-base"
             >
               {isGeneratingMeal || isGenerating ? (
                 <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Creating recipe...
+                  <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                  Creating...
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-5 w-5" />
+                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
                   Generate with AI
                 </>
               )}
@@ -610,7 +610,7 @@ export default function Plan() {
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
+              <div className="relative flex justify-center text-[10px] sm:text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">or choose from recipes</span>
               </div>
             </div>
@@ -619,34 +619,34 @@ export default function Plan() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search your recipes..."
+                placeholder="Search recipes..."
                 value={recipeSearch}
                 onChange={(e) => setRecipeSearch(e.target.value)}
-                className="pl-10 h-12 rounded-xl"
+                className="pl-10 h-11 sm:h-12 rounded-xl text-sm"
               />
             </div>
             
             {/* Recipe list */}
-            <ScrollArea className="h-[200px]">
+            <ScrollArea className="h-[160px] sm:h-[200px]">
               {filteredRecipes.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-1.5 sm:space-y-2">
                   {filteredRecipes.map((recipe) => (
                     <button
                       key={recipe.id}
                       onClick={() => addMealFromRecipe(recipe)}
                       disabled={isAddingMeal}
                       className={cn(
-                        "w-full p-3 rounded-xl text-left transition-colors",
+                        "w-full p-2.5 sm:p-3 rounded-xl text-left transition-colors",
                         "bg-muted/50 hover:bg-muted",
-                        "active:scale-[0.98] tap-highlight-none"
+                        "active:scale-[0.98] tap-highlight-none touch-manipulation"
                       )}
                     >
-                      <p className="font-medium truncate">{recipe.title}</p>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
+                      <p className="font-medium text-sm sm:text-base truncate">{recipe.title}</p>
+                      <div className="flex items-center gap-2 mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-muted-foreground">
+                        <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                         <span>{recipe.prep_time_minutes} min</span>
                         {recipe.health_tags?.[0] && (
-                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                          <Badge variant="secondary" className="text-[9px] sm:text-[10px] px-1.5 py-0">
                             {recipe.health_tags[0]}
                           </Badge>
                         )}
@@ -655,9 +655,9 @@ export default function Plan() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p className="text-sm">No recipes found</p>
-                  <p className="text-xs mt-1">Create one with AI above!</p>
+                <div className="text-center py-6 sm:py-8 text-muted-foreground">
+                  <p className="text-xs sm:text-sm">No recipes found</p>
+                  <p className="text-[10px] sm:text-xs mt-1">Create one with AI above!</p>
                 </div>
               )}
             </ScrollArea>
@@ -666,23 +666,23 @@ export default function Plan() {
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">or add custom meal</span>
+              <div className="relative flex justify-center text-[10px] sm:text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">or add custom</span>
               </div>
             </div>
             
             {/* Custom meal input */}
             <div className="flex gap-2">
               <Input
-                placeholder="Enter meal name..."
+                placeholder="Meal name..."
                 value={customMealName}
                 onChange={(e) => setCustomMealName(e.target.value)}
-                className="h-12 rounded-xl flex-1"
+                className="h-11 sm:h-12 rounded-xl flex-1 text-sm"
               />
               <Button
                 onClick={addCustomMeal}
                 disabled={!customMealName.trim() || isAddingMeal}
-                className="h-12 px-6 rounded-xl"
+                className="h-11 sm:h-12 px-5 sm:px-6 rounded-xl text-sm"
               >
                 Add
               </Button>
