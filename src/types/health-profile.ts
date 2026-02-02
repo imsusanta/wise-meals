@@ -13,6 +13,10 @@ export interface HealthProfile {
 }
 
 export type AgeRange = 
+  | "30-34"
+  | "35-39"
+  | "40-44"
+  | "45-49"
   | "50-54" 
   | "55-59" 
   | "60-64" 
