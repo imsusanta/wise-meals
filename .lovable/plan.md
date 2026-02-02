@@ -1,4 +1,3 @@
-
 # NourishWise - Meal Planning App for Adults 50+
 
 ## Overview
@@ -6,157 +5,261 @@ A full-featured, accessible meal planning application designed specifically for 
 
 ---
 
-## Phase 1: Foundation & Design System
+## Feature Priority Matrix
 
-### Accessibility-First Design System
-- **Typography**: Large, readable fonts (18px body, 24px+ headers) with adjustable font size setting
-- **Color Palette**: 
-  - Soft sage green (primary actions, health indicators)
-  - Warm orange/coral (accents, encouragement)
-  - Calm blue (hydration, calm UI elements)
-  - High contrast dark text on light backgrounds
-- **Touch Targets**: All buttons minimum 48x48px for easy tapping
-- **Layout**: Clean, uncluttered with generous white space
-
-### Navigation Structure
-- **Bottom Navigation Bar** with 4 labeled icons:
-  1. 🏠 Home
-  2. 📅 Plan
-  3. 🍳 Recipes
-  4. 🛒 List
+| Priority | Feature | Why It Matters |
+|----------|---------|----------------|
+| 🥇 Must Have | Large fonts & simple UI | Useless if they can't see/navigate |
+| 🥇 Must Have | Health condition filters | Core value proposition |
+| 🥇 Must Have | Easy recipe viewing | Basic functionality |
+| 🥇 Must Have | Medication-food alerts | Safety critical |
+| 🥈 Should Have | Auto grocery list | Huge time saver |
+| 🥈 Should Have | Reminder system | Drives daily usage |
+| 🥈 Should Have | Recipe scaling (1-2 people) | Practical need |
+| 🥈 Should Have | Voice features | Accessibility |
+| 🥉 Nice to Have | Family sharing | Builds trust |
+| 🥉 Nice to Have | Budget tracking | Added value |
+| 🥉 Nice to Have | Leftover management | Reduces waste |
 
 ---
 
-## Phase 2: User Authentication & Backend
+## 🏥 Health-Centric Features
 
-### User Accounts (Lovable Cloud + Supabase)
-- Email/password registration and login
-- Secure session management with cloud sync
-- User profile data persistence
+### 1. Health Condition-Based Meal Plans
+- **Diabetes-friendly** - Low glycemic index foods, sugar tracking
+- **Heart-healthy** - Low sodium, low cholesterol recipes
+- **Blood Pressure control** - DASH diet options
+- **Bone health** - Calcium & Vitamin D rich meals
+- **Kidney-friendly** - Low potassium, low phosphorus options
+- **Anti-inflammatory** - For arthritis and joint pain
+- **GERD/Acid reflux friendly** - Avoid trigger foods
 
-### Database Structure
-- User profiles with health settings
-- Meal plans (weekly schedules)
-- Saved recipes and favorites
-- Shopping lists
-- Caregiver/family member connections
+### 2. Medication-Food Interaction Alerts
+- Example: "If you take blood thinners, limit green leafy vegetables (Vitamin K)"
+- "Avoid grapefruit if you're on cholesterol medication (statins)"
+- "Take this meal 2 hours after your medication"
+- User inputs their medications, app warns about conflicts
 
----
-
-## Phase 3: Onboarding Flow
-
-### Welcome & Setup (5 screens)
-1. **Welcome Screen**: App benefits and warm introduction
-2. **Health Profile**: 
-   - Age range selection
-   - Dietary restrictions multi-select (diabetes-friendly, heart-healthy, low-sodium, etc.)
-3. **Allergies & Intolerances**: Common allergens checklist (nuts, dairy, gluten, shellfish, etc.)
-4. **Cooking Preferences**:
-   - Skill level (beginner, comfortable, experienced)
-   - Household size (1, 2, 3-4, 5+)
-5. **Budget & Summary**: Weekly budget range and profile review
+### 3. Simple Nutrition Tracking
+- **Protein** - Critical for maintaining muscle mass after 50
+- **Fiber** - Digestive health
+- **Hydration tracker** - Elderly often forget to drink water
+- **Sodium/Salt** - Important for BP control
+- **Calcium & Vitamin D** - Bone strength
 
 ---
 
-## Phase 4: Home Dashboard
+## 👁️ Accessibility Features (Extremely Important)
 
-### Today's View
-- **Today's Meals**: Prominent display of breakfast, lunch, dinner, and snacks for the day
-- **"What Should I Eat Now?"**: Quick AI-powered suggestion button based on time of day and preferences
-- **Hydration Tracker**: Simple water intake reminder with visual progress
-- **Weekly Nutrition Summary**: Friendly color-coded overview (green = balanced, yellow = needs attention)
-- **Health Tip of the Day**: Rotating motivational and educational content
+### 4. Vision-Friendly Design ✅
+- Large text - Adjustable font size (small, medium, large, extra-large)
+- High contrast mode - Dark text on light background
+- Large buttons - Minimum 48x48px tap targets
+- No fancy fonts - Simple, readable typography
+- Avoid light gray text - Hard to read for aging eyes
 
----
+### 5. Voice Features
+- Voice commands - "What's for dinner tonight?"
+- Read recipes aloud - Hands are busy while cooking
+- Voice search - No typing needed
+- Voice input for grocery list - "Add eggs to my list"
 
-## Phase 5: Meal Planner (Weekly View)
-
-### Calendar Interface
-- **7-Day Overview**: Visual weekly calendar showing all planned meals
-- **Meal Management**:
-  - Drag-and-drop meal assignment
-  - Swap meals between days
-  - Mark as "prepared" or "skipped"
-- **AI Auto-Generate**: One-tap button to fill the week based on health profile
-- **Nutritional Balance Indicator**: Simple color-coded daily/weekly health score
-- **"Low Energy Day" Filter**: Quick access to meals under 15 minutes prep
+### 6. Motor-Friendly Interface ✅
+- Simple gestures - No complex swipes
+- Minimal scrolling - Important info visible upfront
+- Undo button - Easy to fix mistakes
+- No time-limited actions - Give users enough time
 
 ---
 
-## Phase 6: Recipe Browser & AI Generation
+## 🍳 Cooking Convenience Features
 
-### Recipe Discovery
-- **Large Recipe Cards**: Big, appetizing images with clear labels
-- **Smart Filters**:
-  - Prep time (under 15 min, 15-30 min, 30-60 min)
-  - Health conditions (from user's profile)
-  - Cuisine type
-  - Difficulty level
-- **Voice Search**: Microphone option for hands-free searching
+### 7. Recipe Scaling (Portion Adjustment)
+- Cook for 1-2 people (empty nesters don't need family-sized recipes)
+- "Make half portion" button
+- Leftover storage instructions
+- "This recipe freezes well" indicator
 
-### AI Recipe Generation
-- **On-Demand Creation**: Describe what you want and AI generates a personalized recipe
-- **Health-Aware**: Recipes respect user's dietary restrictions and health conditions
-- **Customizable Servings**: Easy scaling for 1-4 people
+### 8. Smart Recipe Filters
+- Cooking time - 15 min, 30 min, 1 hour
+- Difficulty level - Easy, Medium, Hard
+- "Low energy day" mode - Shows only the simplest recipes
+- One-pot meals - Less cleanup
+- No-cook options - Salads, sandwiches
+- Soft food options - For dental issues
 
-### Recipe Detail Page
-- **Step-by-Step Mode**: Large text, one instruction at a time option
-- **Ingredient Checklist**: Tap to check off as you go
-- **Nutrition Panel**: Calories, sodium, fiber, protein prominently displayed
-- **Actions**: 
-  - Add to meal plan
-  - Add ingredients to shopping list
-  - Print recipe
-  - Save to favorites
+### 9. Step-by-Step Cooking Mode
+- One step shown at a time (large text)
+- Photo or video for each step
+- Built-in timer ("Boil for 5 minutes" - tap to start timer)
+- "Read this step aloud" button
+- Keep screen awake while cooking
 
----
-
-## Phase 7: Smart Grocery List
-
-### Automated List Building
-- **Auto-Generated**: Pulls ingredients from weekly meal plan
-- **Store Organization**: Grouped by section (produce, dairy, proteins, pantry, frozen)
-- **Management Features**:
-  - Check items as purchased
-  - Adjust quantities
-  - Add custom items
-  - Estimated cost calculator
-- **Sharing**: Send list via text or email to family members
+### 10. Leftover Management
+- "What can I make with leftovers?" feature
+- Suggests tomorrow's meal using today's extra food
+- Storage instructions (how long it lasts in fridge/freezer)
+- Reduces food waste and saves money
 
 ---
 
-## Phase 8: Health Profile & Settings
+## 🛒 Grocery & Budget Features
 
-### Profile Management
-- **Update Anytime**: Modify dietary needs, allergies, preferences
-- **Font Size Slider**: Adjust app-wide text size for comfort
-- **Notification Controls**: Enable/disable reminders
+### 11. Smart Grocery List ✅ (Basic)
+- Auto-generated from weekly meal plan
+- Organized by store section (produce, dairy, meat, etc.)
+- Checkbox to mark items as bought
+- Share list via SMS/WhatsApp/Email
+- Print option (many seniors prefer paper lists)
 
-### Health Features
-- **Medication Reminders**: Optional meal-time medication alerts
-- **Food-Drug Interaction Warnings**: Alerts about potential interactions (e.g., grapefruit + statins)
-- **Doctor Visit Export**: Generate PDF summary of eating habits and nutrition
-
-### Special Modes
-- **"Cooking for One" Mode**: Auto-scales all recipes to single servings
-- **Emergency Contact**: Store important contact information
+### 12. Budget-Friendly Options
+- Estimated weekly cost shown for meal plans
+- Cheaper substitutes suggested ("Use chicken thighs instead of breast - saves $3")
+- Seasonal produce recommendations (cheaper & fresher)
+- "Under $50 this week" meal plan filter
+- Fixed income friendly options
 
 ---
 
-## Phase 9: Advanced Features
+## 👨‍👩‍👧 Family & Caregiver Features
 
-### Caregiver/Family Access
-- Invite family members or caregivers
-- View-only or edit permissions
-- Shared shopping lists
+### 13. Caregiver/Family Access
+- Invite family members to view meal plans
+- Adult children can monitor parents' nutrition from afar
+- Caregiver can plan meals for elderly person
+- Different permission levels (view only vs. edit)
 
-### Leftover Transformer
-- Input what leftovers you have
-- AI suggests new meal ideas using those ingredients
+### 14. Doctor/Nutritionist Sharing
+- Export weekly meal plan as PDF
+- Nutrition summary report for doctor visits
+- Track eating patterns over time
+- Notes section for health appointments
 
-### Weekly Email Digest
-- Optional weekly summary of meals, nutrition, and health tips
-- Printable format for fridge or caregiver reference
+---
+
+## ⏰ Reminder & Alert System
+
+### 15. Smart Reminders
+- Meal time reminders ("It's lunch time!")
+- Hydration reminders (every 2 hours)
+- "Take medication with food" alerts
+- Grocery shopping day reminder
+- "Your bananas expire tomorrow" - use them up alerts
+
+### 16. Gentle Notifications
+- Not too frequent (annoying for elderly)
+- Easy to customize or turn off
+- Large, readable notification text
+- Sound + visual alerts (some have hearing issues)
+
+---
+
+## 🎯 Simplicity Features
+
+### 17. Clean Dashboard ✅
+- Today's 3 meals visible at a glance
+- Water intake progress
+- One clear "Plan my week" button
+- No cluttered interface
+- Minimal options on screen
+
+### 18. Favorites & Repeat Meals
+- Save favorite recipes
+- "Make this every Monday" option
+- Quick repeat last week's plan
+- Familiar meals reduce decision fatigue
+
+### 19. Offline Access
+- View saved recipes without internet
+- Grocery list works offline
+- Important for areas with poor connectivity
+- Syncs when back online
+
+---
+
+## 💡 Engagement & Motivation
+
+### 20. Daily Health Tips ✅
+- Short, actionable tips
+- "Did you know?" nutrition facts
+- Gentle encouragement, not lecturing
+- Celebrate small wins ("You drank 8 glasses today!")
+
+### 21. Progress Tracking (Simple)
+- Weekly nutrition summary (visual, not numbers)
+- Green = good, Yellow = needs attention
+- "You ate 5 servings of vegetables this week!"
+- No overwhelming data/charts
+
+---
+
+## 🚨 Safety Features
+
+### 22. Allergy & Intolerance Warnings ✅ (Onboarding)
+- Set allergies once, warns every time
+- Highlights allergens in recipes
+- Suggests safe substitutes
+- Cross-contamination warnings
+
+### 23. Emergency Information
+- Store emergency contact
+- Medical conditions summary
+- Can be shared quickly if needed
+
+---
+
+## Key Design Principles
+
+1. **Simplicity over features** - Don't overwhelm with options
+2. **Big and clear** - Everything should be easy to see and tap
+3. **Forgiveness** - Easy to undo mistakes, no permanent actions
+4. **Consistency** - Same layout on every screen
+5. **Trust** - Be transparent about health recommendations
+6. **Respect** - Never condescending or "baby-ish" design
+
+---
+
+## Implementation Phases
+
+### Phase 1: Foundation ✅
+- [x] Accessibility-first design system (18px base, 48px touch targets)
+- [x] High-contrast color palette (sage green, coral, calm blue)
+- [x] Bottom navigation (Home, Plan, Recipes, List)
+- [x] Reusable layout components
+- [x] Onboarding flow with health profile capture
+
+### Phase 2: Authentication & Database (Next)
+- [ ] User authentication (email/password)
+- [ ] Profiles table with health settings
+- [ ] Meal plans table
+- [ ] Recipes table
+- [ ] Shopping lists table
+- [ ] RLS policies for user data
+
+### Phase 3: Core Features
+- [ ] Recipe browser with smart filters
+- [ ] AI recipe generation (Lovable AI)
+- [ ] Weekly meal planner with drag-drop
+- [ ] Auto-generated grocery list
+
+### Phase 4: Health Safety Features
+- [ ] Medication-food interaction alerts
+- [ ] Allergen warnings in recipes
+- [ ] Nutrition tracking (protein, fiber, sodium)
+- [ ] Hydration tracker improvements
+
+### Phase 5: Accessibility Enhancements
+- [ ] Font size slider in Settings
+- [ ] Voice search integration
+- [ ] Read aloud functionality
+- [ ] Step-by-step cooking mode with timers
+
+### Phase 6: Advanced Features
+- [ ] Caregiver/family access
+- [ ] PDF export for doctors
+- [ ] Leftover management AI
+- [ ] Budget tracking & substitutes
+- [ ] Offline mode with sync
 
 ---
 
@@ -165,20 +268,21 @@ A full-featured, accessible meal planning application designed specifically for 
 ### Frontend
 - React with TypeScript
 - Tailwind CSS with custom accessibility theme
+- Zustand for state management
 - Mobile-first responsive design
-- Offline support for viewing saved recipes
 
 ### Backend (Lovable Cloud)
 - User authentication with Supabase Auth
 - PostgreSQL database for all user data
 - Edge functions for AI recipe generation via Lovable AI
-- Secure health data handling
+- Secure health data handling with RLS
 
 ### Accessibility Standards
 - WCAG AA compliance
 - Screen reader compatible
 - Keyboard navigation support
 - High contrast mode
+- Minimum 48x48px touch targets
 
 ---
 
