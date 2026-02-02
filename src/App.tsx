@@ -3,8 +3,14 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
+import { AppLayout } from "@/components/layout/AppLayout";
+import Home from "@/pages/Home";
+import Plan from "@/pages/Plan";
+import Recipes from "@/pages/Recipes";
+import GroceryList from "@/pages/GroceryList";
+import Settings from "@/pages/Settings";
+import Onboarding from "@/pages/Onboarding";
+import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -15,8 +21,19 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          {/* Onboarding - no layout */}
+          <Route path="/onboarding" element={<Onboarding />} />
+          
+          {/* Main app with bottom nav */}
+          <Route element={<AppLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/plan" element={<Plan />} />
+            <Route path="/recipes" element={<Recipes />} />
+            <Route path="/list" element={<GroceryList />} />
+            <Route path="/settings" element={<Settings />} />
+          </Route>
+          
+          {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
