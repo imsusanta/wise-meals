@@ -33,6 +33,7 @@ interface Recipe {
   health_tags: string[];
   is_favorite: boolean;
   is_ai_generated: boolean;
+  image_url: string | null;
 }
 
 const filters = ["All", "Favorites", "Under 15 min", "Heart-Healthy", "High Fiber"];
@@ -68,7 +69,7 @@ export default function Recipes() {
     setIsLoading(true);
     let query = supabase
       .from("recipes")
-      .select("id, title, description, prep_time_minutes, servings, difficulty, health_tags, is_favorite, is_ai_generated")
+      .select("id, title, description, prep_time_minutes, servings, difficulty, health_tags, is_favorite, is_ai_generated, image_url")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -215,6 +216,7 @@ export default function Recipes() {
                     healthTags={recipe.health_tags}
                     isFavorite={recipe.is_favorite}
                     isAiGenerated={recipe.is_ai_generated}
+                    imageUrl={recipe.image_url}
                     index={index}
                     totalCards={filteredRecipes.length}
                     onClick={() => {

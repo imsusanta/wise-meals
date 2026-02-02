@@ -14,6 +14,40 @@ interface RecipeRequest {
   cooking_skill?: string;
 }
 
+async function generateRecipeImage(title: string, description: string, apiKey: string): Promise<string | null> {
+  try {
+    const imagePrompt = `Professional food photography of "${title}". ${description}. Beautifully plated dish on a clean modern table setting, natural lighting, shallow depth of field, appetizing and delicious looking, high-end restaurant quality presentation. Ultra high resolution.`;
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-image",
+        messages: [
+          { role: "user", content: imagePrompt }
+        ],
+        modalities: ["image", "text"]
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Image generation failed:", response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    
+    return imageUrl || null;
+  } catch (error) {
+    console.error("Image generation error:", error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -120,6 +154,12 @@ IMPORTANT: Always return a valid JSON object with this exact structure:
     } catch (parseError) {
       console.error("Failed to parse recipe JSON:", content);
       throw new Error("Failed to parse recipe from AI response");
+    }
+
+    // Generate image for the recipe
+    const imageUrl = await generateRecipeImage(recipe.title, recipe.description, LOVABLE_API_KEY);
+    if (imageUrl) {
+      recipe.image_url = imageUrl;
     }
 
     return new Response(

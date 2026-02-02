@@ -22,6 +22,7 @@ export interface GeneratedRecipe {
   health_tags: string[];
   storage_instructions: string;
   freezer_friendly: boolean;
+  image_url?: string;
 }
 
 export function useRecipeGenerator() {
@@ -111,6 +112,7 @@ export function useRecipeGenerator() {
           storage_instructions: recipe.storage_instructions,
           freezer_friendly: recipe.freezer_friendly,
           is_ai_generated: true,
+          image_url: recipe.image_url,
         })
         .select()
         .single();

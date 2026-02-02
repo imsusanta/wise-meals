@@ -12,6 +12,7 @@ interface RecipeCardProps {
   healthTags: string[];
   isFavorite: boolean;
   isAiGenerated: boolean;
+  imageUrl?: string | null;
   onClick: () => void;
   onFavoriteToggle: (e: React.MouseEvent) => void;
   index?: number;
@@ -46,6 +47,7 @@ export function RecipeCard({
   healthTags,
   isFavorite,
   isAiGenerated,
+  imageUrl,
   onClick,
   onFavoriteToggle,
   index = 0,
@@ -74,15 +76,38 @@ export function RecipeCard({
         "tap-highlight-none touch-manipulation"
       )}
     >
+      {/* Background Image */}
+      {imageUrl && (
+        <div className="absolute inset-0">
+          <img 
+            src={imageUrl} 
+            alt={title}
+            className="w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-300"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-card/60" />
+        </div>
+      )}
+      
       {/* Glass overlay */}
-      <div className="absolute inset-0 bg-card/70 backdrop-blur-sm" />
+      <div className={cn(
+        "absolute inset-0 backdrop-blur-sm",
+        imageUrl ? "bg-card/50" : "bg-card/70"
+      )} />
       
       {/* Content */}
       <div className="relative p-4 sm:p-5">
         <div className="flex gap-3 sm:gap-4">
-          {/* Emoji Icon - Responsive size */}
-          <div className="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-background/80 backdrop-blur flex items-center justify-center text-2xl sm:text-3xl shadow-sm border border-border/20">
-            {getRecipeEmoji(healthTags)}
+          {/* Image/Emoji Icon */}
+          <div className="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-background/80 backdrop-blur flex items-center justify-center overflow-hidden shadow-sm border border-border/20">
+            {imageUrl ? (
+              <img 
+                src={imageUrl} 
+                alt={title}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-2xl sm:text-3xl">{getRecipeEmoji(healthTags)}</span>
+            )}
           </div>
           
           {/* Info */}
