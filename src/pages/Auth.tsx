@@ -188,20 +188,7 @@ export default function Auth() {
   const handleGuestAccess = async () => {
     setIsGuestLoading(true);
     
-    const guestId = crypto.randomUUID().slice(0, 8);
-    const guestEmail = `guest_${guestId}@nourishwise.local`;
-    const guestPassword = crypto.randomUUID();
-
-    const { data, error } = await supabase.auth.signUp({
-      email: guestEmail,
-      password: guestPassword,
-      options: {
-        data: {
-          full_name: "Guest User",
-          is_guest: true,
-        },
-      },
-    });
+    const { data, error } = await supabase.auth.signInAnonymously();
 
     if (error) {
       toast({
@@ -214,14 +201,10 @@ export default function Auth() {
     }
 
     if (data.user) {
+      // Create profile for anonymous user
       await supabase.from("profiles").insert({
         user_id: data.user.id,
         full_name: "Guest User",
-      });
-
-      await supabase.auth.signInWithPassword({
-        email: guestEmail,
-        password: guestPassword,
       });
     }
 
