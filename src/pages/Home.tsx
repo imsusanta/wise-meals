@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { 
   Sparkles, 
@@ -17,7 +15,6 @@ import {
   Plus,
   Clock,
   Flame,
-  Leaf,
   Activity
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -27,7 +24,6 @@ import { useProfile } from "@/hooks/useProfile";
 import { useRecipeGenerator } from "@/hooks/useRecipeGenerator";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { DIETARY_RESTRICTION_LABELS, type DietaryRestriction } from "@/types/health-profile";
 import { cn } from "@/lib/utils";
 
 interface HydrationLog {
@@ -51,42 +47,48 @@ const healthConditions = [
     id: "diabetes-friendly", 
     label: "Diabetes-Friendly", 
     emoji: "🩺", 
-    color: "bg-blue-500/10 border-blue-500/30 hover:border-blue-500",
+    gradient: "from-blue-500/25 via-blue-400/15 to-blue-300/5",
+    iconBg: "bg-blue-500/20",
     description: "Low glycemic, blood sugar friendly"
   },
   { 
     id: "heart-healthy", 
     label: "Heart-Healthy", 
     emoji: "❤️", 
-    color: "bg-red-500/10 border-red-500/30 hover:border-red-500",
+    gradient: "from-rose-500/25 via-rose-400/15 to-rose-300/5",
+    iconBg: "bg-rose-500/20",
     description: "Low sodium, cholesterol conscious"
   },
   { 
     id: "anti-inflammatory", 
     label: "Anti-Inflammatory", 
     emoji: "🦴", 
-    color: "bg-orange-500/10 border-orange-500/30 hover:border-orange-500",
+    gradient: "from-orange-500/25 via-orange-400/15 to-orange-300/5",
+    iconBg: "bg-orange-500/20",
     description: "Joint & arthritis friendly"
   },
   { 
     id: "bone-health", 
     label: "Bone Health", 
     emoji: "💪", 
-    color: "bg-purple-500/10 border-purple-500/30 hover:border-purple-500",
+    gradient: "from-purple-500/25 via-purple-400/15 to-purple-300/5",
+    iconBg: "bg-purple-500/20",
     description: "Calcium & Vitamin D rich"
   },
   { 
     id: "kidney-friendly", 
     label: "Kidney-Friendly", 
     emoji: "🫘", 
-    color: "bg-green-500/10 border-green-500/30 hover:border-green-500",
+    gradient: "from-green-500/25 via-green-400/15 to-green-300/5",
+    iconBg: "bg-green-500/20",
     description: "Low potassium & phosphorus"
   },
   { 
     id: "gerd-friendly", 
     label: "GERD/Reflux", 
     emoji: "🌿", 
-    color: "bg-teal-500/10 border-teal-500/30 hover:border-teal-500",
+    gradient: "from-teal-500/25 via-teal-400/15 to-teal-300/5",
+    iconBg: "bg-teal-500/20",
     description: "Avoid trigger foods"
   },
 ];
@@ -200,14 +202,12 @@ export default function Home() {
     setSelectedCondition(null);
     
     if (result) {
-      // Navigate to recipes to see the saved recipe
       navigate("/recipes");
     }
   };
 
   const hydrationProgress = Math.min((hydrationGlasses / 8) * 100, 100);
 
-  // Check for medication interactions
   const hasMedicationWarnings = medications.some(med => 
     med.food_interactions && med.food_interactions.length > 0
   );
@@ -220,145 +220,214 @@ export default function Home() {
         showLogo
       />
 
-      <div className="container px-4 py-4 space-y-4 animate-fade-in scroll-native">
+      <div className="container px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-5 animate-fade-in scroll-native">
         {/* Medication Alert Banner */}
         {hasMedicationWarnings && (
-          <div 
-            className="bg-warning/10 rounded-2xl border border-warning/30 p-4 flex items-center gap-4 active:scale-[0.98] transition-transform cursor-pointer tap-highlight-none"
+          <button 
+            className={cn(
+              "w-full relative overflow-hidden rounded-2xl sm:rounded-3xl p-4",
+              "bg-gradient-to-br from-warning/20 via-warning/10 to-warning/5",
+              "border border-warning/30 hover:border-warning/50",
+              "transition-all duration-300 active:scale-[0.98]",
+              "tap-highlight-none touch-manipulation group text-left"
+            )}
             onClick={() => setShowMedAlert(true)}
           >
-            <div className="w-11 h-11 rounded-full bg-warning/20 flex items-center justify-center shrink-0">
-              <AlertTriangle className="h-5 w-5 text-warning" />
+            <div className="absolute inset-0 bg-card/40 backdrop-blur-sm" />
+            <div className="relative flex items-center gap-3 sm:gap-4">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-warning/20 backdrop-blur-sm flex items-center justify-center">
+                <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-warning" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-sm sm:text-base">Medication Food Alerts</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                  {medications.length} medication(s) with interactions
+                </p>
+              </div>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-warning/10 flex items-center justify-center">
+                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-warning" />
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm">Medication Food Alerts</h3>
-              <p className="text-xs text-muted-foreground truncate">
-                {medications.length} medication(s) with interactions
-              </p>
-            </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-          </div>
+          </button>
         )}
 
         {/* MAIN FEATURE: Health Condition-Based Meal Planning */}
         <div>
-          <h2 className="text-base font-bold mb-3 flex items-center gap-2">
-            <Heart className="h-4 w-4 text-primary" />
-            Get Meals For Your Health
+          <h2 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-primary/10 flex items-center justify-center">
+              <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            </div>
+            <span>Get Meals For Your Health</span>
           </h2>
-          <div className="grid grid-cols-2 gap-2.5">
-            {healthConditions.map((condition) => (
-              <div 
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            {healthConditions.map((condition, index) => (
+              <button 
                 key={condition.id}
                 className={cn(
-                  "rounded-2xl p-3.5 text-center cursor-pointer transition-all tap-highlight-none select-none",
-                  "active:scale-[0.97] border-2",
-                  condition.color,
-                  isGenerating && selectedCondition === condition.id && "ring-2 ring-primary ring-offset-2"
+                  "relative overflow-hidden rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 text-center",
+                  "bg-gradient-to-br",
+                  condition.gradient,
+                  "border border-border/40 hover:border-primary/30",
+                  "transition-all duration-300 active:scale-[0.97]",
+                  "tap-highlight-none touch-manipulation group",
+                  isGenerating && selectedCondition === condition.id && "ring-2 ring-primary ring-offset-2",
+                  "animate-fade-in"
                 )}
+                style={{ animationDelay: `${index * 50}ms` }}
                 onClick={() => !isGenerating && handleConditionSelect(condition.id)}
+                disabled={isGenerating}
               >
-                <div className="text-3xl mb-1.5">{condition.emoji}</div>
-                <h3 className="font-semibold text-xs mb-0.5">{condition.label}</h3>
-                <p className="text-[10px] text-muted-foreground line-clamp-2 leading-tight">
-                  {condition.description}
-                </p>
-                {isGenerating && selectedCondition === condition.id && (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin mx-auto mt-1.5 text-primary" />
-                )}
-              </div>
+                {/* Glass overlay */}
+                <div className="absolute inset-0 bg-card/50 backdrop-blur-sm" />
+                
+                <div className="relative">
+                  <div className={cn(
+                    "w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-xl sm:rounded-2xl mb-2 sm:mb-3",
+                    condition.iconBg, "backdrop-blur-sm",
+                    "flex items-center justify-center text-2xl sm:text-3xl",
+                    "shadow-sm border border-border/20"
+                  )}>
+                    {isGenerating && selectedCondition === condition.id ? (
+                      <Loader2 className="h-6 w-6 sm:h-7 sm:w-7 animate-spin text-primary" />
+                    ) : (
+                      condition.emoji
+                    )}
+                  </div>
+                  <h3 className="font-bold text-xs sm:text-sm mb-0.5 sm:mb-1">{condition.label}</h3>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground line-clamp-2 leading-tight">
+                    {condition.description}
+                  </p>
+                </div>
+              </button>
             ))}
           </div>
         </div>
 
         {/* Quick Actions Row */}
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
           <Button 
             size="lg" 
-            className="h-14 text-sm font-semibold gap-2 bg-primary hover:bg-primary/90 rounded-2xl active:scale-[0.97] transition-transform"
+            className={cn(
+              "h-14 sm:h-16 text-sm sm:text-base font-bold gap-2 rounded-2xl sm:rounded-3xl",
+              "bg-gradient-to-r from-primary to-primary/80",
+              "hover:from-primary/90 hover:to-primary/70",
+              "shadow-lg shadow-primary/20",
+              "active:scale-[0.97] transition-all duration-200"
+            )}
             onClick={() => navigate("/plan")}
           >
-            <Sparkles className="h-4 w-4" />
+            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
             Plan My Week
           </Button>
           <Button 
             size="lg" 
             variant="outline"
-            className="h-14 text-sm font-semibold gap-2 rounded-2xl active:scale-[0.97] transition-transform"
+            className={cn(
+              "h-14 sm:h-16 text-sm sm:text-base font-bold gap-2 rounded-2xl sm:rounded-3xl",
+              "border-2 border-border/50 hover:border-secondary/50",
+              "bg-gradient-to-br from-card to-muted/30",
+              "hover:from-secondary/10 hover:to-secondary/5",
+              "active:scale-[0.97] transition-all duration-200"
+            )}
             onClick={() => navigate("/recipes")}
           >
-            <Flame className="h-4 w-4" />
+            <Flame className="h-4 w-4 sm:h-5 sm:w-5" />
             Browse Recipes
           </Button>
         </div>
 
         {/* Today's Meals Quick View */}
-        <div className="bg-card rounded-2xl border border-border/50 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border/30">
-            <span className="font-semibold text-sm">Today's Meals</span>
-            <Button variant="ghost" size="sm" asChild className="h-7 text-xs">
-              <Link to="/plan" className="text-primary">
-                View All <ChevronRight className="h-3 w-3 ml-1" />
-              </Link>
-            </Button>
-          </div>
-          <div className="divide-y divide-border/30">
-            <MealSlot type="Breakfast" emoji="🍳" time="8:00 AM" />
-            <MealSlot type="Lunch" emoji="🥗" time="12:30 PM" />
-            <MealSlot type="Dinner" emoji="🍽️" time="6:00 PM" />
+        <div className={cn(
+          "relative overflow-hidden rounded-2xl sm:rounded-3xl",
+          "bg-gradient-to-br from-card via-card/95 to-muted/20",
+          "border border-border/40"
+        )}>
+          <div className="absolute inset-0 bg-card/60 backdrop-blur-sm" />
+          <div className="relative">
+            <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border/30">
+              <span className="font-bold text-sm sm:text-base">Today's Meals</span>
+              <Button variant="ghost" size="sm" asChild className="h-8 text-xs sm:text-sm text-primary hover:text-primary/80">
+                <Link to="/plan" className="gap-1">
+                  View All <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            </div>
+            <div className="divide-y divide-border/30">
+              <MealSlot type="Breakfast" emoji="🍳" time="8:00 AM" />
+              <MealSlot type="Lunch" emoji="🥗" time="12:30 PM" />
+              <MealSlot type="Dinner" emoji="🍽️" time="6:00 PM" />
+            </div>
           </div>
         </div>
 
         {/* Hydration + Nutrition Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {/* Hydration Tracker */}
-          <div className="bg-accent/5 rounded-2xl border border-accent/20 p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
-                <Droplets className="h-5 w-5 text-accent" />
+          <div className={cn(
+            "relative overflow-hidden rounded-2xl sm:rounded-3xl p-4 sm:p-5",
+            "bg-gradient-to-br from-accent/20 via-accent/10 to-accent/5",
+            "border border-accent/30"
+          )}>
+            <div className="absolute inset-0 bg-card/50 backdrop-blur-sm" />
+            <div className="relative">
+              <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-accent/20 backdrop-blur-sm flex items-center justify-center border border-accent/20">
+                  <Droplets className="h-5 w-5 sm:h-6 sm:w-6 text-accent" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-sm sm:text-base">Stay Hydrated</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    {hydrationGlasses} of 8 glasses
+                  </p>
+                </div>
+                <Button 
+                  size="sm" 
+                  className={cn(
+                    "h-10 w-10 sm:h-11 sm:w-11 p-0 rounded-xl sm:rounded-2xl",
+                    "bg-accent hover:bg-accent/90 text-accent-foreground",
+                    "shadow-md shadow-accent/20",
+                    "active:scale-95 transition-transform"
+                  )}
+                  onClick={addGlass}
+                  disabled={isAddingWater}
+                >
+                  {isAddingWater ? <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" /> : <Plus className="h-4 w-4 sm:h-5 sm:w-5" />}
+                </Button>
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-sm">Stay Hydrated</h3>
-                <p className="text-xs text-muted-foreground">
-                  {hydrationGlasses} of 8 glasses
-                </p>
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-9 w-9 p-0 border-accent text-accent hover:bg-accent hover:text-accent-foreground rounded-xl active:scale-95 transition-transform"
-                onClick={addGlass}
-                disabled={isAddingWater}
-              >
-                {isAddingWater ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-              </Button>
+              <Progress value={hydrationProgress} className="h-2.5 sm:h-3" />
             </div>
-            <Progress value={hydrationProgress} className="h-2" />
           </div>
 
           {/* Quick Nutrition Summary */}
-          <div className="bg-card rounded-2xl border border-border/50 p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <Activity className="h-5 w-5 text-primary" />
+          <div className={cn(
+            "relative overflow-hidden rounded-2xl sm:rounded-3xl p-4 sm:p-5",
+            "bg-gradient-to-br from-primary/15 via-primary/8 to-primary/3",
+            "border border-primary/20"
+          )}>
+            <div className="absolute inset-0 bg-card/50 backdrop-blur-sm" />
+            <div className="relative">
+              <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-primary/20 backdrop-blur-sm flex items-center justify-center border border-primary/20">
+                  <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm sm:text-base">Today's Nutrition</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Looking good!</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-sm">Today's Nutrition</h3>
-                <p className="text-xs text-muted-foreground">Looking good!</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="p-2 rounded-xl bg-primary/10">
-                <p className="font-bold text-primary text-sm">✓</p>
-                <p className="text-[10px] text-muted-foreground">Fiber</p>
-              </div>
-              <div className="p-2 rounded-xl bg-primary/10">
-                <p className="font-bold text-primary text-sm">✓</p>
-                <p className="text-[10px] text-muted-foreground">Sodium</p>
-              </div>
-              <div className="p-2 rounded-xl bg-secondary/10">
-                <p className="font-bold text-secondary text-sm">⚡</p>
-                <p className="text-[10px] text-muted-foreground">Protein</p>
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-background/60 backdrop-blur-sm text-center border border-border/20">
+                  <p className="font-bold text-primary text-base sm:text-lg">✓</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">Fiber</p>
+                </div>
+                <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-background/60 backdrop-blur-sm text-center border border-border/20">
+                  <p className="font-bold text-primary text-base sm:text-lg">✓</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">Sodium</p>
+                </div>
+                <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-background/60 backdrop-blur-sm text-center border border-border/20">
+                  <p className="font-bold text-secondary text-base sm:text-lg">⚡</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">Protein</p>
+                </div>
               </div>
             </div>
           </div>
@@ -366,16 +435,21 @@ export default function Home() {
 
         {/* Health Tip */}
         {healthTip && (
-          <div className="bg-primary/5 rounded-2xl border border-primary/20 p-4">
-            <div className="flex gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                <Lightbulb className="h-5 w-5 text-primary" />
+          <div className={cn(
+            "relative overflow-hidden rounded-2xl sm:rounded-3xl p-4 sm:p-5",
+            "bg-gradient-to-br from-secondary/15 via-secondary/8 to-secondary/3",
+            "border border-secondary/20"
+          )}>
+            <div className="absolute inset-0 bg-card/50 backdrop-blur-sm" />
+            <div className="relative flex gap-3 sm:gap-4">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-secondary/20 backdrop-blur-sm flex items-center justify-center shrink-0 border border-secondary/20">
+                <Lightbulb className="h-5 w-5 sm:h-6 sm:w-6 text-secondary" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm text-primary mb-1">
-                  Health Tip
+                <h3 className="font-bold text-sm sm:text-base text-secondary mb-1">
+                  Health Tip of the Day
                 </h3>
-                <p className="text-xs text-foreground leading-relaxed">
+                <p className="text-xs sm:text-sm text-foreground leading-relaxed">
                   {healthTip.content}
                 </p>
               </div>
@@ -385,48 +459,66 @@ export default function Home() {
 
         {/* Add Medications CTA */}
         {medications.length === 0 && (
-          <div className="rounded-2xl border-2 border-dashed border-border p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-              <Pill className="h-5 w-5 text-muted-foreground" />
+          <div className={cn(
+            "relative overflow-hidden rounded-2xl sm:rounded-3xl p-4 sm:p-5",
+            "border-2 border-dashed border-muted-foreground/30",
+            "bg-gradient-to-br from-muted/30 via-muted/20 to-transparent"
+          )}>
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-muted flex items-center justify-center border border-border/30">
+                <Pill className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-sm sm:text-base">Add Your Medications</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Get alerts about food-drug interactions
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                asChild 
+                className="rounded-xl sm:rounded-2xl h-9 sm:h-10 text-xs sm:text-sm font-semibold"
+              >
+                <Link to="/settings">Add</Link>
+              </Button>
             </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-sm">Add Your Medications</h3>
-              <p className="text-xs text-muted-foreground">
-                Get alerts about food-drug interactions
-              </p>
-            </div>
-            <Button variant="outline" size="sm" asChild className="rounded-xl h-8 text-xs">
-              <Link to="/settings">Add</Link>
-            </Button>
           </div>
         )}
+
+        {/* Bottom spacing for nav */}
+        <div className="h-20" />
       </div>
 
       {/* Medication Alert Dialog */}
       <Dialog open={showMedAlert} onOpenChange={setShowMedAlert}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning" />
-              Medication Food Alerts
-            </DialogTitle>
-            <DialogDescription>
-              These are foods to be careful with based on your medications.
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-w-lg rounded-3xl border-border/50 p-0 overflow-hidden">
+          <div className="bg-gradient-to-br from-warning/10 via-warning/5 to-transparent p-6 pb-4">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3 text-xl">
+                <div className="w-10 h-10 rounded-xl bg-warning/20 flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-warning" />
+                </div>
+                Medication Food Alerts
+              </DialogTitle>
+              <DialogDescription className="text-base">
+                These are foods to be careful with based on your medications.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
           
-          <div className="space-y-4 pt-4">
+          <div className="p-6 pt-2 space-y-4">
             {medications.map((med) => (
-              <div key={med.id} className="p-4 rounded-lg bg-muted/50">
-                <h4 className="font-semibold flex items-center gap-2">
+              <div key={med.id} className="p-4 rounded-2xl bg-muted/50 border border-border/30">
+                <h4 className="font-bold flex items-center gap-2">
                   <Pill className="h-4 w-4" />
                   {med.name}
                 </h4>
                 {med.food_interactions && med.food_interactions.length > 0 ? (
-                  <div className="mt-2 space-y-1">
+                  <div className="mt-2 space-y-1.5">
                     {med.food_interactions.map((interaction, i) => (
                       <p key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                        <AlertTriangle className="h-3 w-3 text-warning mt-1 shrink-0" />
+                        <AlertTriangle className="h-3.5 w-3.5 text-warning mt-0.5 shrink-0" />
                         {interaction}
                       </p>
                     ))}
@@ -449,14 +541,20 @@ function MealSlot({ type, emoji, time }: { type: string; emoji: string; time: st
   return (
     <Link 
       to="/plan"
-      className="flex items-center gap-3 px-4 py-3 active:bg-muted/50 transition-colors tap-highlight-none"
+      className={cn(
+        "flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4",
+        "hover:bg-muted/30 active:bg-muted/50 transition-colors",
+        "tap-highlight-none touch-manipulation"
+      )}
     >
-      <span className="text-xl">{emoji}</span>
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm">{type}</p>
+      <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-background/60 backdrop-blur-sm flex items-center justify-center text-xl sm:text-2xl border border-border/20">
+        {emoji}
       </div>
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Clock className="h-3 w-3" />
+      <div className="flex-1 min-w-0">
+        <p className="font-bold text-sm sm:text-base">{type}</p>
+      </div>
+      <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-full">
+        <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
         {time}
       </div>
     </Link>
