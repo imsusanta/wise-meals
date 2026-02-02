@@ -192,10 +192,17 @@ export default function Home() {
     else if (hour < 14) mealType = "lunch";
     else if (hour < 19) mealType = "dinner";
 
-    await generateRecipe(
-      `Create a ${condition.label} ${mealType} recipe. Focus on ${condition.description}. Make it easy to prepare, suitable for 1-2 servings.`
+    const result = await generateRecipe(
+      `Create a ${condition.label} ${mealType} recipe. Focus on ${condition.description}. Make it easy to prepare, suitable for 1-2 servings.`,
+      { autoSave: true }
     );
+    
     setSelectedCondition(null);
+    
+    if (result) {
+      // Navigate to recipes to see the saved recipe
+      navigate("/recipes");
+    }
   };
 
   const hydrationProgress = Math.min((hydrationGlasses / 8) * 100, 100);

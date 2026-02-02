@@ -33,6 +33,7 @@ export function useRecipeGenerator() {
   const generateRecipe = async (prompt: string, options?: {
     servings?: number;
     max_prep_time?: number;
+    autoSave?: boolean;
   }) => {
     setIsGenerating(true);
     setGeneratedRecipe(null);
@@ -57,13 +58,22 @@ export function useRecipeGenerator() {
         throw new Error(data.error);
       }
 
-      setGeneratedRecipe(data.recipe);
-      toast({
-        title: "Recipe created!",
-        description: `"${data.recipe.title}" is ready for you.`,
-      });
+      const recipe = data.recipe as GeneratedRecipe;
+      setGeneratedRecipe(recipe);
 
-      return data.recipe;
+      // Auto-save if requested
+      if (options?.autoSave) {
+        const saved = await saveRecipeInternal(recipe);
+        if (saved) {
+          toast({
+            title: "Recipe saved!",
+            description: `"${recipe.title}" has been added to your recipes.`,
+          });
+          return saved;
+        }
+      }
+
+      return recipe;
     } catch (error) {
       console.error("Recipe generation error:", error);
       toast({
@@ -77,7 +87,7 @@ export function useRecipeGenerator() {
     }
   };
 
-  const saveRecipe = async (recipe: GeneratedRecipe) => {
+  const saveRecipeInternal = async (recipe: GeneratedRecipe) => {
     try {
       const { data, error } = await supabase
         .from("recipes")
@@ -100,22 +110,28 @@ export function useRecipeGenerator() {
         .single();
 
       if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Save recipe error:", error);
+      return null;
+    }
+  };
 
+  const saveRecipe = async (recipe: GeneratedRecipe) => {
+    const saved = await saveRecipeInternal(recipe);
+    if (saved) {
       toast({
         title: "Recipe saved!",
         description: "You can find it in your Recipes.",
       });
-
-      return data;
-    } catch (error) {
-      console.error("Save recipe error:", error);
+    } else {
       toast({
         title: "Couldn't save recipe",
         description: "Please try again.",
         variant: "destructive",
       });
-      return null;
     }
+    return saved;
   };
 
   return {
