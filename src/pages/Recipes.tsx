@@ -195,15 +195,15 @@ export default function Recipes() {
         ) : filteredRecipes.length === 0 ? (
           <EmptyRecipes onCreateClick={() => setShowAIDialog(true)} />
         ) : (
-          <div className="relative pb-28">
-            {/* Stacked cards container */}
-            <div className="space-y-3 sm:space-y-4">
+          <div className="pb-28">
+            {/* Grid layout for recipe cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               {filteredRecipes.map((recipe, index) => (
                 <div
                   key={recipe.id}
                   className="animate-fade-in"
                   style={{ 
-                    animationDelay: `${Math.min(index * 40, 300)}ms`,
+                    animationDelay: `${Math.min(index * 50, 400)}ms`,
                   }}
                 >
                   <RecipeCard
@@ -217,8 +217,6 @@ export default function Recipes() {
                     isFavorite={recipe.is_favorite}
                     isAiGenerated={recipe.is_ai_generated}
                     imageUrl={recipe.image_url}
-                    index={index}
-                    totalCards={filteredRecipes.length}
                     onClick={() => {
                       setSelectedRecipeId(recipe.id);
                       setShowSavedRecipeDetail(true);

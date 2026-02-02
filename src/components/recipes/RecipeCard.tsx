@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, Clock, Users, Sparkles } from "lucide-react";
+import { Heart, Clock, Users, Sparkles, ChefHat } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -20,13 +20,13 @@ interface RecipeCardProps {
   totalCards?: number;
 }
 
-const getRecipeGradient = (tags: string[]) => {
-  if (tags.includes("heart-healthy")) return "from-rose-500/20 via-rose-400/10 to-rose-300/5";
-  if (tags.includes("diabetes-friendly")) return "from-blue-500/20 via-blue-400/10 to-blue-300/5";
-  if (tags.includes("vegetarian")) return "from-green-500/20 via-green-400/10 to-green-300/5";
-  if (tags.includes("high-fiber")) return "from-amber-500/20 via-amber-400/10 to-amber-300/5";
-  if (tags.includes("anti-inflammatory")) return "from-purple-500/20 via-purple-400/10 to-purple-300/5";
-  return "from-primary/20 via-primary/10 to-primary/5";
+const getRecipeAccent = (tags: string[]) => {
+  if (tags.includes("heart-healthy")) return { bg: "bg-rose-500", text: "text-rose-500", gradient: "from-rose-500/30" };
+  if (tags.includes("diabetes-friendly")) return { bg: "bg-blue-500", text: "text-blue-500", gradient: "from-blue-500/30" };
+  if (tags.includes("vegetarian")) return { bg: "bg-emerald-500", text: "text-emerald-500", gradient: "from-emerald-500/30" };
+  if (tags.includes("high-fiber")) return { bg: "bg-amber-500", text: "text-amber-500", gradient: "from-amber-500/30" };
+  if (tags.includes("anti-inflammatory")) return { bg: "bg-purple-500", text: "text-purple-500", gradient: "from-purple-500/30" };
+  return { bg: "bg-primary", text: "text-primary", gradient: "from-primary/30" };
 };
 
 const getRecipeEmoji = (tags: string[]) => {
@@ -37,6 +37,12 @@ const getRecipeEmoji = (tags: string[]) => {
   if (tags.includes("anti-inflammatory")) return "✨";
   if (tags.includes("bone-health")) return "🦴";
   return "🍽️";
+};
+
+const getDifficultyLabel = (difficulty: number) => {
+  if (difficulty <= 1) return "Easy";
+  if (difficulty === 2) return "Medium";
+  return "Hard";
 };
 
 export function RecipeCard({
@@ -51,177 +57,181 @@ export function RecipeCard({
   imageUrl,
   onClick,
   onFavoriteToggle,
-  index = 0,
-  totalCards = 1,
 }: RecipeCardProps) {
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
-  
-  // Stack effect: cards peek from behind
-  const isStacked = index < 3 && totalCards > 1;
-  const stackOffset = isStacked ? index * 4 : 0;
-  const stackScale = isStacked ? 1 - index * 0.02 : 1;
+  const accent = getRecipeAccent(healthTags);
+  const hasImage = imageUrl && !imageError;
   
   return (
     <div
       onClick={onClick}
-      style={{
-        transform: `translateY(${stackOffset}px) scale(${stackScale})`,
-        zIndex: totalCards - index,
-      }}
       className={cn(
-        "group relative overflow-hidden rounded-[20px] sm:rounded-3xl",
-        "bg-gradient-to-br",
-        getRecipeGradient(healthTags),
-        "border border-border/40 hover:border-primary/30",
+        "group relative overflow-hidden rounded-2xl sm:rounded-3xl",
+        "bg-card border border-border/50",
         "transition-all duration-300 ease-out",
-        "hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1",
+        "hover:shadow-2xl hover:shadow-black/10 hover:-translate-y-1",
         "active:scale-[0.98] cursor-pointer",
         "tap-highlight-none touch-manipulation"
       )}
     >
-      {/* Background Image */}
-      {imageUrl && !imageError && (
-        <div className="absolute inset-0">
-          {imageLoading && (
-            <div className="absolute inset-0 shimmer" />
-          )}
-          <img 
-            src={imageUrl} 
-            alt={title}
-            className={cn(
-              "w-full h-full object-cover transition-opacity duration-300",
-              imageLoading ? "opacity-0" : "opacity-30 group-hover:opacity-40"
+      {/* Hero Image Section */}
+      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+        {hasImage ? (
+          <>
+            {imageLoading && (
+              <div className="absolute inset-0 shimmer" />
             )}
-            onLoad={() => setImageLoading(false)}
-            onError={() => {
-              setImageLoading(false);
-              setImageError(true);
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-card/60" />
-        </div>
-      )}
-      
-      {/* Glass overlay */}
-      <div className={cn(
-        "absolute inset-0 backdrop-blur-sm",
-        imageUrl ? "bg-card/50" : "bg-card/70"
-      )} />
-      
-      {/* Content */}
-      <div className="relative p-4 sm:p-5">
-        <div className="flex gap-3 sm:gap-4">
-          {/* Image/Emoji Icon */}
-          <div className="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-background/80 backdrop-blur flex items-center justify-center overflow-hidden shadow-sm border border-border/20">
-            {imageUrl && !imageError ? (
-              <div className="relative w-full h-full">
-                {imageLoading && (
-                  <div className="absolute inset-0 shimmer" />
-                )}
-                <img 
-                  src={imageUrl} 
-                  alt={title}
-                  className={cn(
-                    "w-full h-full object-cover transition-opacity duration-300",
-                    imageLoading ? "opacity-0" : "opacity-100"
-                  )}
-                  onLoad={() => setImageLoading(false)}
-                  onError={() => {
-                    setImageLoading(false);
-                    setImageError(true);
-                  }}
-                />
-              </div>
-            ) : (
-              <span className="text-2xl sm:text-3xl">{getRecipeEmoji(healthTags)}</span>
-            )}
-          </div>
-          
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <h3 className="font-bold text-base sm:text-lg leading-tight line-clamp-2 text-foreground">
-                {title}
-              </h3>
-              <button
-                onClick={onFavoriteToggle}
-                className={cn(
-                  "shrink-0 w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center rounded-full transition-all duration-200",
-                  "bg-background/50 hover:bg-background/80 active:scale-90",
-                  "touch-manipulation"
-                )}
-                aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-              >
-                <Heart 
-                  className={cn(
-                    "h-5 w-5 transition-all duration-300",
-                    isFavorite 
-                      ? "fill-destructive text-destructive scale-110" 
-                      : "text-muted-foreground"
-                  )} 
-                />
-              </button>
-            </div>
-            
-            {description && (
-              <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1 mb-2">
-                {description}
-              </p>
-            )}
-            
-            {/* Meta Info - Responsive */}
-            <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
-              <span className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="font-medium">{prepTime}m</span>
-              </span>
-              <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-              <span className="flex items-center gap-1">
-                <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="font-medium">{servings}</span>
-              </span>
-              <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-              <span className="flex items-center gap-0.5">
-                {[...Array(3)].map((_, i) => (
-                  <span
-                    key={i}
-                    className={cn(
-                      "w-1.5 h-1.5 rounded-full transition-colors",
-                      i < difficulty ? "bg-secondary" : "bg-muted"
-                    )}
-                  />
-                ))}
-              </span>
-            </div>
-            
-            {/* Tags - Responsive */}
-            <div className="flex gap-1 sm:gap-1.5 flex-wrap">
-              {healthTags.slice(0, 2).map((tag) => (
-                <Badge 
-                  key={tag} 
-                  variant="secondary" 
-                  className="text-[10px] sm:text-xs font-medium px-2 sm:px-2.5 py-0.5 bg-background/70 backdrop-blur-sm border-0 rounded-full"
-                >
-                  {tag}
-                </Badge>
-              ))}
-              {isAiGenerated && (
-                <Badge 
-                  variant="outline" 
-                  className="text-[10px] sm:text-xs font-medium px-2 sm:px-2.5 py-0.5 bg-secondary/10 border-secondary/20 text-secondary rounded-full"
-                >
-                  <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
-                  AI
-                </Badge>
+            <img 
+              src={imageUrl} 
+              alt={title}
+              className={cn(
+                "w-full h-full object-cover transition-all duration-500",
+                "group-hover:scale-105",
+                imageLoading ? "opacity-0" : "opacity-100"
               )}
-            </div>
+              onLoad={() => setImageLoading(false)}
+              onError={() => {
+                setImageLoading(false);
+                setImageError(true);
+              }}
+            />
+          </>
+        ) : (
+          <div className={cn(
+            "w-full h-full flex items-center justify-center",
+            "bg-gradient-to-br from-muted via-muted to-muted/80"
+          )}>
+            <div className="text-6xl opacity-50">{getRecipeEmoji(healthTags)}</div>
+          </div>
+        )}
+        
+        {/* Gradient overlay */}
+        <div className={cn(
+          "absolute inset-0 bg-gradient-to-t",
+          accent.gradient,
+          "via-transparent to-transparent opacity-60"
+        )} />
+        
+        {/* Top badges */}
+        <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
+          {/* AI Badge */}
+          {isAiGenerated && (
+            <Badge className={cn(
+              "bg-secondary/90 backdrop-blur-md text-secondary-foreground",
+              "border-0 gap-1 px-2.5 py-1 text-xs font-semibold",
+              "shadow-lg shadow-secondary/20"
+            )}>
+              <Sparkles className="h-3 w-3" />
+              AI
+            </Badge>
+          )}
+          {!isAiGenerated && <div />}
+          
+          {/* Favorite button */}
+          <button
+            onClick={onFavoriteToggle}
+            className={cn(
+              "w-9 h-9 sm:w-10 sm:h-10 rounded-full",
+              "bg-background/80 backdrop-blur-md",
+              "flex items-center justify-center",
+              "transition-all duration-200 active:scale-90",
+              "border border-white/20 shadow-lg",
+              "hover:bg-background"
+            )}
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          >
+            <Heart 
+              className={cn(
+                "h-4 w-4 sm:h-5 sm:w-5 transition-all duration-300",
+                isFavorite 
+                  ? "fill-destructive text-destructive scale-110" 
+                  : "text-muted-foreground"
+              )} 
+            />
+          </button>
+        </div>
+        
+        {/* Time badge at bottom */}
+        <div className="absolute bottom-3 left-3">
+          <div className={cn(
+            "flex items-center gap-1.5 px-2.5 py-1.5",
+            "bg-background/90 backdrop-blur-md rounded-full",
+            "text-xs sm:text-sm font-medium",
+            "border border-white/10 shadow-lg"
+          )}>
+            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+            <span>{prepTime} min</span>
           </div>
         </div>
       </div>
       
-      {/* Hover glow effect */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-gradient-to-t from-primary/5 via-transparent to-transparent" />
+      {/* Content Section */}
+      <div className="p-4 sm:p-5 space-y-3">
+        {/* Title */}
+        <h3 className="font-bold text-base sm:text-lg leading-tight line-clamp-2 text-foreground group-hover:text-primary transition-colors">
+          {title}
+        </h3>
+        
+        {/* Description */}
+        {description && (
+          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+            {description}
+          </p>
+        )}
+        
+        {/* Meta Row */}
+        <div className="flex items-center justify-between pt-1">
+          {/* Left: Servings & Difficulty */}
+          <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <Users className="h-3.5 w-3.5" />
+              <span>{servings} servings</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <ChefHat className="h-3.5 w-3.5" />
+              <span>{getDifficultyLabel(difficulty)}</span>
+            </span>
+          </div>
+          
+          {/* Right: Difficulty dots */}
+          <div className="flex items-center gap-1">
+            {[...Array(3)].map((_, i) => (
+              <span
+                key={i}
+                className={cn(
+                  "w-2 h-2 rounded-full transition-colors",
+                  i < difficulty ? accent.bg : "bg-muted"
+                )}
+              />
+            ))}
+          </div>
+        </div>
+        
+        {/* Tags */}
+        <div className="flex gap-1.5 flex-wrap pt-1">
+          {healthTags.slice(0, 3).map((tag) => (
+            <Badge 
+              key={tag} 
+              variant="secondary" 
+              className={cn(
+                "text-[10px] sm:text-xs font-medium px-2.5 py-1",
+                "bg-muted/80 hover:bg-muted border-0 rounded-full",
+                "transition-colors"
+              )}
+            >
+              {tag}
+            </Badge>
+          ))}
+        </div>
+      </div>
+      
+      {/* Accent line at bottom */}
+      <div className={cn(
+        "absolute bottom-0 left-0 right-0 h-1",
+        accent.bg,
+        "opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+      )} />
     </div>
   );
 }
