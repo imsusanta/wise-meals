@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Heart, PlayCircle, Loader2 } from "lucide-react";
+import { Clock, Users, Heart, PlayCircle, Loader2, Sparkles } from "lucide-react";
 import { CookingMode } from "@/components/cooking/CookingMode";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,8 @@ interface SavedRecipe {
   nutrition: unknown;
   storage_instructions: string | null;
   freezer_friendly: boolean | null;
+  image_url: string | null;
+  is_ai_generated: boolean | null;
 }
 
 interface RecipeDetailDialogProps {
@@ -97,6 +99,7 @@ export function RecipeDetailDialog({
     health_tags: recipe.health_tags || [],
     storage_instructions: recipe.storage_instructions || "",
     freezer_friendly: recipe.freezer_friendly || false,
+    image_url: recipe.image_url || undefined,
   } : null;
 
   const ingredients = (recipe?.ingredients as GeneratedRecipe["ingredients"]) || [];
@@ -106,50 +109,127 @@ export function RecipeDetailDialog({
   return (
     <>
       <Dialog open={open && !showCookingMode} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl p-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : recipe ? (
             <>
-              <DialogHeader>
-                <DialogTitle className="text-xl">{recipe.title}</DialogTitle>
-                {recipe.description && (
-                  <DialogDescription>{recipe.description}</DialogDescription>
-                )}
-              </DialogHeader>
+              {/* Hero Image */}
+              {recipe.image_url ? (
+                <div className="relative w-full aspect-[16/10] overflow-hidden rounded-t-3xl">
+                  <img 
+                    src={recipe.image_url} 
+                    alt={recipe.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+                  
+                  {/* AI Badge */}
+                  {recipe.is_ai_generated && (
+                    <div className="absolute top-4 left-4">
+                      <Badge className="bg-secondary/90 backdrop-blur-sm text-secondary-foreground border-0 gap-1 px-3 py-1">
+                        <Sparkles className="h-3 w-3" />
+                        AI Generated
+                      </Badge>
+                    </div>
+                  )}
+                  
+                  {/* Favorite button overlay */}
+                  <button
+                    onClick={toggleFavorite}
+                    disabled={isFavoriting}
+                    className={cn(
+                      "absolute top-4 right-4 w-10 h-10 rounded-full",
+                      "bg-background/80 backdrop-blur-sm",
+                      "flex items-center justify-center",
+                      "transition-all duration-200 active:scale-90",
+                      "border border-border/30"
+                    )}
+                  >
+                    <Heart 
+                      className={cn(
+                        "h-5 w-5 transition-all",
+                        recipe.is_favorite 
+                          ? "fill-destructive text-destructive" 
+                          : "text-muted-foreground"
+                      )} 
+                    />
+                  </button>
+                  
+                  {/* Title overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 p-5">
+                    <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+                      {recipe.title}
+                    </h2>
+                    {recipe.description && (
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                        {recipe.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <DialogHeader className="p-6 pb-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <DialogTitle className="text-xl">{recipe.title}</DialogTitle>
+                      {recipe.description && (
+                        <DialogDescription className="mt-1">{recipe.description}</DialogDescription>
+                      )}
+                    </div>
+                    {recipe.is_ai_generated && (
+                      <Badge className="bg-secondary/20 text-secondary border-0 gap-1 shrink-0">
+                        <Sparkles className="h-3 w-3" />
+                        AI
+                      </Badge>
+                    )}
+                  </div>
+                </DialogHeader>
+              )}
               
-              <div className="space-y-6 pt-4">
+              <div className={cn(
+                "space-y-5",
+                recipe.image_url ? "p-5 pt-3" : "p-6 pt-4"
+              )}>
                 {/* Quick Info */}
-                <div className="flex gap-4 text-sm">
-                  <span className="flex items-center gap-1">
+                <div className="flex gap-3 sm:gap-4">
+                  <div className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full text-sm">
                     <Clock className="h-4 w-4 text-muted-foreground" />
-                    {(recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0)} min total
-                  </span>
-                  <span className="flex items-center gap-1">
+                    <span className="font-medium">
+                      {(recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0)} min
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full text-sm">
                     <Users className="h-4 w-4 text-muted-foreground" />
-                    {recipe.servings || 2} servings
-                  </span>
+                    <span className="font-medium">{recipe.servings || 2} servings</span>
+                  </div>
                 </div>
 
                 {/* Tags */}
                 {recipe.health_tags && recipe.health_tags.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {recipe.health_tags.map(tag => (
-                      <Badge key={tag} variant="secondary">{tag}</Badge>
+                      <Badge 
+                        key={tag} 
+                        variant="secondary" 
+                        className="rounded-full px-3 py-1 font-medium"
+                      >
+                        {tag}
+                      </Badge>
                     ))}
                   </div>
                 )}
 
                 {/* Ingredients */}
                 {ingredients.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold mb-3">Ingredients</h4>
+                  <div className="bg-muted/30 rounded-2xl p-4">
+                    <h4 className="font-bold mb-3">Ingredients</h4>
                     <ul className="space-y-2">
                       {ingredients.map((ing, i) => (
                         <li key={i} className="flex items-start gap-2">
-                          <span className="text-primary">•</span>
+                          <span className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
                           <span>
                             <strong>{ing.amount}</strong> {ing.name}
                             {ing.notes && <span className="text-muted-foreground"> ({ing.notes})</span>}
@@ -163,14 +243,14 @@ export function RecipeDetailDialog({
                 {/* Instructions */}
                 {instructions.length > 0 && (
                   <div>
-                    <h4 className="font-semibold mb-3">Instructions</h4>
+                    <h4 className="font-bold mb-3">Instructions</h4>
                     <ol className="space-y-4">
                       {instructions.map((inst) => (
                         <li key={inst.step} className="flex gap-3">
-                          <span className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold shrink-0">
+                          <span className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold shrink-0">
                             {inst.step}
                           </span>
-                          <span className="pt-0.5">{inst.text}</span>
+                          <span className="pt-1">{inst.text}</span>
                         </li>
                       ))}
                     </ol>
@@ -179,20 +259,20 @@ export function RecipeDetailDialog({
 
                 {/* Nutrition */}
                 {nutrition && (
-                  <div className="bg-muted/50 rounded-lg p-4">
-                    <h4 className="font-semibold mb-3">Nutrition (per serving)</h4>
-                    <div className="grid grid-cols-3 gap-3 text-center text-sm">
-                      <div>
-                        <p className="font-bold text-lg">{nutrition.calories}</p>
-                        <p className="text-muted-foreground">Calories</p>
+                  <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-2xl p-4">
+                    <h4 className="font-bold mb-3">Nutrition (per serving)</h4>
+                    <div className="grid grid-cols-3 gap-3 text-center">
+                      <div className="bg-background/60 rounded-xl p-3">
+                        <p className="font-bold text-xl text-primary">{nutrition.calories}</p>
+                        <p className="text-muted-foreground text-xs">Calories</p>
                       </div>
-                      <div>
-                        <p className="font-bold text-lg">{nutrition.protein_g}g</p>
-                        <p className="text-muted-foreground">Protein</p>
+                      <div className="bg-background/60 rounded-xl p-3">
+                        <p className="font-bold text-xl text-secondary">{nutrition.protein_g}g</p>
+                        <p className="text-muted-foreground text-xs">Protein</p>
                       </div>
-                      <div>
-                        <p className="font-bold text-lg">{nutrition.fiber_g}g</p>
-                        <p className="text-muted-foreground">Fiber</p>
+                      <div className="bg-background/60 rounded-xl p-3">
+                        <p className="font-bold text-xl text-accent">{nutrition.fiber_g}g</p>
+                        <p className="text-muted-foreground text-xs">Fiber</p>
                       </div>
                     </div>
                   </div>
@@ -200,8 +280,8 @@ export function RecipeDetailDialog({
 
                 {/* Storage */}
                 {recipe.storage_instructions && (
-                  <div className="text-sm text-muted-foreground">
-                    <strong>Storage:</strong> {recipe.storage_instructions}
+                  <div className="text-sm text-muted-foreground bg-muted/30 rounded-xl p-3">
+                    <strong>💡 Storage:</strong> {recipe.storage_instructions}
                     {recipe.freezer_friendly && " ❄️ Freezer-friendly"}
                   </div>
                 )}
@@ -210,27 +290,34 @@ export function RecipeDetailDialog({
                 <div className="flex flex-col gap-3 pt-2">
                   {instructions.length > 0 && (
                     <Button 
-                      className="w-full h-12 gap-2 bg-secondary hover:bg-secondary/90"
+                      className={cn(
+                        "w-full h-14 gap-2 rounded-2xl text-base font-bold",
+                        "bg-gradient-to-r from-secondary to-secondary/80",
+                        "hover:from-secondary/90 hover:to-secondary/70",
+                        "shadow-lg shadow-secondary/20"
+                      )}
                       onClick={() => setShowCookingMode(true)}
                     >
                       <PlayCircle className="h-5 w-5" />
                       Start Cooking
                     </Button>
                   )}
-                  <Button 
-                    variant="outline"
-                    className="w-full gap-2"
-                    onClick={toggleFavorite}
-                    disabled={isFavoriting}
-                  >
-                    <Heart 
-                      className={cn(
-                        "h-4 w-4",
-                        recipe.is_favorite && "fill-destructive text-destructive"
-                      )} 
-                    />
-                    {recipe.is_favorite ? "Remove from Favorites" : "Add to Favorites"}
-                  </Button>
+                  {!recipe.image_url && (
+                    <Button 
+                      variant="outline"
+                      className="w-full h-12 gap-2 rounded-xl"
+                      onClick={toggleFavorite}
+                      disabled={isFavoriting}
+                    >
+                      <Heart 
+                        className={cn(
+                          "h-4 w-4",
+                          recipe.is_favorite && "fill-destructive text-destructive"
+                        )} 
+                      />
+                      {recipe.is_favorite ? "Remove from Favorites" : "Add to Favorites"}
+                    </Button>
+                  )}
                 </div>
               </div>
             </>
