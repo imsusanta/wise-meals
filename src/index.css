@@ -156,20 +156,17 @@
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
   
-  /* Minimum touch target size for accessibility */
-  button, 
-  [role="button"],
-  input[type="checkbox"],
-  input[type="radio"],
-  a {
-    min-height: 48px;
-    min-width: 48px;
+  /* Minimum touch target size for accessibility - only for standalone interactive elements */
+  button:not(.inline-btn), 
+  [role="button"]:not(.inline-btn) {
+    min-height: 44px;
   }
   
-  /* Exception for inline links */
-  p a, li a {
-    min-height: auto;
-    min-width: auto;
+  /* Larger touch targets for form elements */
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 24px;
+    min-width: 24px;
   }
 }
 

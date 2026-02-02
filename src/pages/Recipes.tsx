@@ -15,14 +15,13 @@ import {
   Filter,
   Loader2,
   Heart,
-  ChevronRight,
-  X,
   PlayCircle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRecipeGenerator, type GeneratedRecipe } from "@/hooks/useRecipeGenerator";
 import { CookingMode } from "@/components/cooking/CookingMode";
+import { RecipeDetailDialog } from "@/components/recipes/RecipeDetailDialog";
 import { cn } from "@/lib/utils";
 
 interface Recipe {
@@ -52,6 +51,8 @@ export default function Recipes() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [showRecipeDetail, setShowRecipeDetail] = useState(false);
   const [showCookingMode, setShowCookingMode] = useState(false);
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
+  const [showSavedRecipeDetail, setShowSavedRecipeDetail] = useState(false);
 
   useEffect(() => {
     fetchRecipes();
@@ -202,12 +203,16 @@ export default function Recipes() {
             {filteredRecipes.map((recipe) => (
               <Card 
                 key={recipe.id}
-                className="overflow-hidden cursor-pointer hover:border-primary/50 transition-all"
+                className="overflow-hidden cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
+                onClick={() => {
+                  setSelectedRecipeId(recipe.id);
+                  setShowSavedRecipeDetail(true);
+                }}
               >
                 <CardContent className="p-0">
                   <div className="flex">
                     {/* Recipe Emoji */}
-                    <div className="w-28 h-28 bg-muted flex items-center justify-center text-5xl shrink-0">
+                    <div className="w-28 h-28 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center text-5xl shrink-0">
                       {getRecipeEmoji(recipe.health_tags)}
                     </div>
                     
@@ -228,8 +233,8 @@ export default function Recipes() {
                         >
                           <Heart 
                             className={cn(
-                              "h-5 w-5",
-                              recipe.is_favorite ? "fill-destructive text-destructive" : "text-muted-foreground"
+                              "h-5 w-5 transition-all",
+                              recipe.is_favorite ? "fill-destructive text-destructive scale-110" : "text-muted-foreground"
                             )} 
                           />
                         </Button>
@@ -472,13 +477,28 @@ export default function Recipes() {
         </DialogContent>
       </Dialog>
 
-      {/* Cooking Mode */}
+      {/* Cooking Mode for Generated Recipe */}
       {showCookingMode && generatedRecipe && (
         <CookingMode 
           recipe={generatedRecipe} 
           onClose={() => setShowCookingMode(false)} 
         />
       )}
+
+      {/* Saved Recipe Detail Dialog */}
+      <RecipeDetailDialog
+        recipeId={selectedRecipeId}
+        open={showSavedRecipeDetail}
+        onOpenChange={(open) => {
+          setShowSavedRecipeDetail(open);
+          if (!open) setSelectedRecipeId(null);
+        }}
+        onFavoriteChange={(recipeId, isFavorite) => {
+          setRecipes(recipes.map(r => 
+            r.id === recipeId ? { ...r, is_favorite: isFavorite } : r
+          ));
+        }}
+      />
     </div>
   );
 }
