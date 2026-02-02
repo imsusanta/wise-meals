@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sparkles, Clock, Check, X, Loader2, Plus, ChevronLeft, ChevronRight, Search, Utensils } from "lucide-react";
+import { CalendarDaySkeleton, MealSlotSkeleton } from "@/components/ui/loading-skeletons";
 import { cn } from "@/lib/utils";
 import { format, startOfWeek, addDays, addWeeks, subWeeks } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -327,10 +328,41 @@ export default function Plan() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading meal plan...</p>
+      <div className="min-h-screen bg-background pb-24">
+        <PageHeader 
+          title="Meal Plan" 
+          subtitle="Loading..."
+        />
+        <div className="container px-4 py-6 space-y-5 animate-fade-in">
+          {/* Week navigation skeleton */}
+          <div className="flex items-center justify-between">
+            <div className="w-10 h-10 shimmer rounded-lg" />
+            <div className="w-24 h-10 shimmer rounded-full" />
+            <div className="w-10 h-10 shimmer rounded-lg" />
+          </div>
+          
+          {/* Calendar skeleton */}
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {[...Array(7)].map((_, i) => (
+              <CalendarDaySkeleton key={i} />
+            ))}
+          </div>
+          
+          {/* Daily summary skeleton */}
+          <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/50">
+            <div className="w-12 h-12 shimmer rounded-xl" />
+            <div className="flex-1 space-y-2">
+              <div className="h-5 w-32 shimmer rounded" />
+              <div className="h-4 w-48 shimmer rounded" />
+            </div>
+          </div>
+          
+          {/* Meal slots skeleton */}
+          <div className="space-y-3">
+            {[...Array(4)].map((_, i) => (
+              <MealSlotSkeleton key={i} />
+            ))}
+          </div>
         </div>
       </div>
     );

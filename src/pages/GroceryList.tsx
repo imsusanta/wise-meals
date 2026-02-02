@@ -13,6 +13,7 @@ import {
   Loader2,
   Trash2
 } from "lucide-react";
+import { GroceryItemSkeleton } from "@/components/ui/loading-skeletons";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -190,8 +191,37 @@ export default function GroceryList() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background">
+        <PageHeader 
+          title="Shopping List" 
+          subtitle="Loading..."
+        />
+        <div className="container px-4 py-6 space-y-6 animate-fade-in">
+          {/* Add item skeleton */}
+          <div className="flex gap-2">
+            <div className="flex-1 h-14 shimmer rounded-lg" />
+            <div className="w-14 h-14 shimmer rounded-lg" />
+          </div>
+          
+          {/* Summary skeleton */}
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/50">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 shimmer rounded-xl" />
+              <div className="space-y-2">
+                <div className="h-5 w-32 shimmer rounded" />
+                <div className="h-4 w-24 shimmer rounded" />
+              </div>
+            </div>
+            <div className="h-10 w-24 shimmer rounded-xl" />
+          </div>
+          
+          {/* Item skeletons */}
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <GroceryItemSkeleton key={i} />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

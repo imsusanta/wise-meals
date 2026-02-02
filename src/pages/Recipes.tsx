@@ -23,6 +23,7 @@ import { RecipeReelCard } from "@/components/recipes/RecipeReelCard";
 import { RecipeFilters } from "@/components/recipes/RecipeFilters";
 import { RecipeSearch } from "@/components/recipes/RecipeSearch";
 import { EmptyRecipes } from "@/components/recipes/EmptyRecipes";
+import { RecipeCardSkeleton, RecipeReelSkeleton } from "@/components/ui/loading-skeletons";
 import { cn } from "@/lib/utils";
 
 interface Recipe {
@@ -131,6 +132,18 @@ export default function Recipes() {
   const filteredRecipes = recipes.filter(recipe =>
     recipe.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Reel View Loading State
+  if (isReelView && isLoading) {
+    return (
+      <div 
+        className="fixed inset-0 bg-black z-40 overflow-hidden"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        <RecipeReelSkeleton />
+      </div>
+    );
+  }
 
   // Reel View - TikTok style full screen scroll
   if (isReelView && filteredRecipes.length > 0 && !isLoading) {
@@ -313,13 +326,19 @@ export default function Recipes() {
 
         {/* Recipe List */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <div className="relative">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
+          <div className="pb-28">
+            {/* Animated skeleton grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+              {[...Array(4)].map((_, index) => (
+                <div
+                  key={index}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <RecipeCardSkeleton />
+                </div>
+              ))}
             </div>
-            <p className="text-muted-foreground">Loading recipes...</p>
           </div>
         ) : filteredRecipes.length === 0 ? (
           <EmptyRecipes onCreateClick={() => setShowAIDialog(true)} />
