@@ -13,34 +13,35 @@ function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>)
   );
 }
 
-// Recipe card skeleton for grid view
+// Recipe card skeleton for grid view - Compact
 export function RecipeCardSkeleton() {
   return (
-    <div className="rounded-2xl overflow-hidden bg-card border border-border">
+    <div className="rounded-xl sm:rounded-2xl overflow-hidden bg-card border border-border">
       {/* Image placeholder */}
-      <div className="aspect-[4/3] shimmer" />
+      <div className="aspect-[16/9] shimmer" />
       
       {/* Content */}
-      <div className="p-4 space-y-3">
+      <div className="p-3 sm:p-3.5 space-y-2">
         {/* Title */}
-        <Skeleton className="h-6 w-3/4" />
-        
-        {/* Description */}
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-2/3" />
-        </div>
+        <Skeleton className="h-5 w-3/4" />
         
         {/* Meta info */}
-        <div className="flex gap-3 pt-2">
-          <Skeleton className="h-8 w-20 rounded-full" />
-          <Skeleton className="h-8 w-24 rounded-full" />
+        <div className="flex justify-between items-center">
+          <div className="flex gap-2">
+            <Skeleton className="h-4 w-10 rounded-full" />
+            <Skeleton className="h-4 w-14 rounded-full" />
+          </div>
+          <div className="flex gap-0.5">
+            <Skeleton className="h-1.5 w-1.5 rounded-full" />
+            <Skeleton className="h-1.5 w-1.5 rounded-full" />
+            <Skeleton className="h-1.5 w-1.5 rounded-full" />
+          </div>
         </div>
         
         {/* Tags */}
-        <div className="flex gap-2 pt-1">
-          <Skeleton className="h-6 w-16 rounded-full" />
-          <Skeleton className="h-6 w-20 rounded-full" />
+        <div className="flex gap-1">
+          <Skeleton className="h-5 w-14 rounded-full" />
+          <Skeleton className="h-5 w-16 rounded-full" />
         </div>
       </div>
     </div>

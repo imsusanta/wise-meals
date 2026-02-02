@@ -67,16 +67,16 @@ export function RecipeCard({
     <div
       onClick={onClick}
       className={cn(
-        "group relative overflow-hidden rounded-2xl sm:rounded-3xl",
+        "group relative overflow-hidden rounded-xl sm:rounded-2xl",
         "bg-card border border-border/50",
         "transition-all duration-300 ease-out",
-        "hover:shadow-2xl hover:shadow-black/10 hover:-translate-y-1",
+        "hover:shadow-xl hover:shadow-black/10 hover:-translate-y-0.5",
         "active:scale-[0.98] cursor-pointer",
         "tap-highlight-none touch-manipulation"
       )}
     >
-      {/* Hero Image Section */}
-      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+      {/* Compact Hero Image Section */}
+      <div className="relative aspect-[16/9] overflow-hidden bg-muted">
         {hasImage ? (
           <>
             {imageLoading && (
@@ -102,7 +102,7 @@ export function RecipeCard({
             "w-full h-full flex items-center justify-center",
             "bg-gradient-to-br from-muted via-muted to-muted/80"
           )}>
-            <div className="text-6xl opacity-50">{getRecipeEmoji(healthTags)}</div>
+            <div className="text-4xl opacity-50">{getRecipeEmoji(healthTags)}</div>
           </div>
         )}
         
@@ -114,15 +114,15 @@ export function RecipeCard({
         )} />
         
         {/* Top badges */}
-        <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
+        <div className="absolute top-2 left-2 right-2 flex items-start justify-between">
           {/* AI Badge */}
           {isAiGenerated && (
             <Badge className={cn(
               "bg-secondary/90 backdrop-blur-md text-secondary-foreground",
-              "border-0 gap-1 px-2.5 py-1 text-xs font-semibold",
+              "border-0 gap-1 px-2 py-0.5 text-[10px] font-semibold",
               "shadow-lg shadow-secondary/20"
             )}>
-              <Sparkles className="h-3 w-3" />
+              <Sparkles className="h-2.5 w-2.5" />
               AI
             </Badge>
           )}
@@ -132,7 +132,7 @@ export function RecipeCard({
           <button
             onClick={onFavoriteToggle}
             className={cn(
-              "w-9 h-9 sm:w-10 sm:h-10 rounded-full",
+              "w-7 h-7 sm:w-8 sm:h-8 rounded-full",
               "bg-background/80 backdrop-blur-md",
               "flex items-center justify-center",
               "transition-all duration-200 active:scale-90",
@@ -143,7 +143,7 @@ export function RecipeCard({
           >
             <Heart 
               className={cn(
-                "h-4 w-4 sm:h-5 sm:w-5 transition-all duration-300",
+                "h-3.5 w-3.5 transition-all duration-300",
                 isFavorite 
                   ? "fill-destructive text-destructive scale-110" 
                   : "text-muted-foreground"
@@ -153,54 +153,47 @@ export function RecipeCard({
         </div>
         
         {/* Time badge at bottom */}
-        <div className="absolute bottom-3 left-3">
+        <div className="absolute bottom-2 left-2">
           <div className={cn(
-            "flex items-center gap-1.5 px-2.5 py-1.5",
+            "flex items-center gap-1 px-2 py-1",
             "bg-background/90 backdrop-blur-md rounded-full",
-            "text-xs sm:text-sm font-medium",
+            "text-[10px] sm:text-xs font-medium",
             "border border-white/10 shadow-lg"
           )}>
-            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-            <span>{prepTime} min</span>
+            <Clock className="h-3 w-3 text-muted-foreground" />
+            <span>{prepTime}m</span>
           </div>
         </div>
       </div>
       
-      {/* Content Section */}
-      <div className="p-4 sm:p-5 space-y-3">
+      {/* Compact Content Section */}
+      <div className="p-3 sm:p-3.5 space-y-2">
         {/* Title */}
-        <h3 className="font-bold text-base sm:text-lg leading-tight line-clamp-2 text-foreground group-hover:text-primary transition-colors">
+        <h3 className="font-bold text-sm sm:text-base leading-tight line-clamp-1 text-foreground group-hover:text-primary transition-colors">
           {title}
         </h3>
         
-        {/* Description */}
-        {description && (
-          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-            {description}
-          </p>
-        )}
-        
-        {/* Meta Row */}
-        <div className="flex items-center justify-between pt-1">
+        {/* Meta Row - Compact */}
+        <div className="flex items-center justify-between">
           {/* Left: Servings & Difficulty */}
-          <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <Users className="h-3.5 w-3.5" />
-              <span>{servings} servings</span>
+          <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              <span>{servings}</span>
             </span>
-            <span className="flex items-center gap-1.5">
-              <ChefHat className="h-3.5 w-3.5" />
+            <span className="flex items-center gap-1">
+              <ChefHat className="h-3 w-3" />
               <span>{getDifficultyLabel(difficulty)}</span>
             </span>
           </div>
           
           {/* Right: Difficulty dots */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             {[...Array(3)].map((_, i) => (
               <span
                 key={i}
                 className={cn(
-                  "w-2 h-2 rounded-full transition-colors",
+                  "w-1.5 h-1.5 rounded-full transition-colors",
                   i < difficulty ? accent.bg : "bg-muted"
                 )}
               />
@@ -208,14 +201,14 @@ export function RecipeCard({
           </div>
         </div>
         
-        {/* Tags */}
-        <div className="flex gap-1.5 flex-wrap pt-1">
-          {healthTags.slice(0, 3).map((tag) => (
+        {/* Tags - Compact */}
+        <div className="flex gap-1 flex-wrap">
+          {healthTags.slice(0, 2).map((tag) => (
             <Badge 
               key={tag} 
               variant="secondary" 
               className={cn(
-                "text-[10px] sm:text-xs font-medium px-2.5 py-1",
+                "text-[9px] sm:text-[10px] font-medium px-1.5 py-0.5",
                 "bg-muted/80 hover:bg-muted border-0 rounded-full",
                 "transition-colors"
               )}
