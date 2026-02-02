@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, Clock, Users, Sparkles, ChefHat, Play } from "lucide-react";
+import { Heart, Clock, Users, Sparkles, ChefHat, Play, CalendarDays } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,7 @@ interface CompactReelCardProps {
   isFavorite: boolean;
   isAiGenerated: boolean;
   imageUrl?: string | null;
+  isPlannedToday?: boolean;
   onClick: () => void;
   onFavoriteToggle: (e: React.MouseEvent) => void;
   onStartCooking?: () => void;
@@ -54,6 +55,7 @@ export function CompactReelCard({
   isFavorite,
   isAiGenerated,
   imageUrl,
+  isPlannedToday,
   onClick,
   onFavoriteToggle,
   onStartCooking,
@@ -108,13 +110,20 @@ export function CompactReelCard({
           
           {/* Top badges */}
           <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
-            {isAiGenerated && (
-              <Badge className="bg-secondary/90 backdrop-blur-md text-secondary-foreground border-0 gap-1 px-2.5 py-1 text-xs font-semibold shadow-lg">
-                <Sparkles className="h-3 w-3" />
-                AI
-              </Badge>
-            )}
-            {!isAiGenerated && <div />}
+            <div className="flex flex-col gap-2">
+              {isPlannedToday && (
+                <Badge className="bg-primary/90 backdrop-blur-md text-primary-foreground border-0 gap-1 px-2.5 py-1 text-xs font-semibold shadow-lg">
+                  <CalendarDays className="h-3 w-3" />
+                  Today's Meal
+                </Badge>
+              )}
+              {isAiGenerated && (
+                <Badge className="bg-secondary/90 backdrop-blur-md text-secondary-foreground border-0 gap-1 px-2.5 py-1 text-xs font-semibold shadow-lg">
+                  <Sparkles className="h-3 w-3" />
+                  AI
+                </Badge>
+              )}
+            </div>
             
             {/* Favorite button */}
             <button
