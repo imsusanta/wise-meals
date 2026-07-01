@@ -146,9 +146,12 @@ export default function Plan() {
   };
 
   const toggleMealStatus = async (itemId: string, field: "is_prepared" | "is_skipped", currentValue: boolean) => {
+    const update: { is_prepared?: boolean; is_skipped?: boolean } = {
+      [field]: !currentValue,
+    };
     const { error } = await supabase
       .from("meal_plan_items")
-      .update({ [field]: !currentValue })
+      .update(update)
       .eq("id", itemId);
 
     if (!error) {
