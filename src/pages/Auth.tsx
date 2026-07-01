@@ -5,34 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Leaf, Mail, Lock, User, Eye, EyeOff, UserRound, ArrowRight, Apple, Carrot, Salad, Heart, Utensils, Cherry, Fish, Egg, Wheat, Coffee, Soup, Cookie } from "lucide-react";
+import { Leaf, Mail, Lock, User, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { z } from "zod";
 
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
 
 type AuthMode = "welcome" | "signin" | "signup";
-
-// Floating food icons for background decoration
-const FloatingIcon = ({ 
-  icon: Icon, 
-  className, 
-  delay = 0 
-}: { 
-  icon: React.ElementType; 
-  className: string; 
-  delay?: number;
-}) => (
-  <div 
-    className={`absolute text-white/10 ${className}`}
-    style={{ 
-      animation: `float 6s ease-in-out infinite`,
-      animationDelay: `${delay}s`
-    }}
-  >
-    <Icon className="w-full h-full" strokeWidth={1.5} />
-  </div>
-);
 
 export default function Auth() {
   const [mode, setMode] = useState<AuthMode>("welcome");
@@ -214,89 +193,65 @@ export default function Auth() {
   // Welcome Screen with beautiful food graphics
   if (mode === "welcome") {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-primary via-primary to-primary/90 flex flex-col relative overflow-hidden">
-        {/* Floating Food Icons Background */}
-        <style>{`
-          @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(5deg); }
-          }
-        `}</style>
-        
-        {/* Top left cluster */}
-        <FloatingIcon icon={Apple} className="top-12 left-6 w-10 h-10" delay={0} />
-        <FloatingIcon icon={Carrot} className="top-28 left-16 w-8 h-8" delay={1.5} />
-        <FloatingIcon icon={Coffee} className="top-8 left-28 w-7 h-7" delay={0.8} />
-        
-        {/* Top right cluster */}
-        <FloatingIcon icon={Salad} className="top-16 right-8 w-12 h-12" delay={0.5} />
-        <FloatingIcon icon={Cherry} className="top-32 right-24 w-6 h-6" delay={2} />
-        <FloatingIcon icon={Egg} className="top-10 right-32 w-7 h-7" delay={1.2} />
-        
-        {/* Middle left */}
-        <FloatingIcon icon={Fish} className="top-1/3 left-4 w-9 h-9" delay={1.8} />
-        <FloatingIcon icon={Wheat} className="top-1/2 left-8 w-8 h-8" delay={0.3} />
-        
-        {/* Middle right */}
-        <FloatingIcon icon={Soup} className="top-1/3 right-6 w-10 h-10" delay={2.5} />
-        <FloatingIcon icon={Cookie} className="top-1/2 right-12 w-7 h-7" delay={1} />
-        
-        {/* Bottom scattered */}
-        <FloatingIcon icon={Utensils} className="bottom-48 left-12 w-8 h-8" delay={0.7} />
-        <FloatingIcon icon={Heart} className="bottom-56 right-10 w-6 h-6" delay={1.5} />
-        <FloatingIcon icon={Apple} className="bottom-64 left-28 w-7 h-7" delay={2.2} />
-        <FloatingIcon icon={Carrot} className="bottom-52 right-28 w-8 h-8" delay={0.4} />
+      <div className="min-h-screen bg-primary flex items-center justify-center p-6 relative overflow-hidden">
+        {/* Soft ambient blurs */}
+        <div className="absolute top-10 -left-10 w-56 h-56 bg-primary-foreground/20 rounded-full opacity-50 blur-3xl pointer-events-none" aria-hidden />
+        <div className="absolute bottom-32 -right-16 w-72 h-72 bg-primary-foreground/10 rounded-full opacity-40 blur-3xl pointer-events-none" aria-hidden />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary-foreground/5 rounded-full blur-3xl pointer-events-none" aria-hidden />
 
-        {/* App Icon & Branding */}
-        <div className="flex-1 flex flex-col items-center justify-center px-8 text-center relative z-10">
-          <div className="w-28 h-28 bg-white/20 rounded-[2rem] flex items-center justify-center mb-8 backdrop-blur-md shadow-2xl border border-white/20">
-            <Leaf className="h-16 w-16 text-white" strokeWidth={1.5} />
+        <div className="relative z-10 w-full max-w-md flex flex-col items-center justify-between text-center min-h-[600px]">
+          {/* Branding */}
+          <div className="mt-8 flex flex-col items-center animate-fade-in">
+            <div className="bg-primary-foreground p-5 rounded-3xl shadow-2xl inline-block mb-8">
+              <Leaf className="w-12 h-12 text-primary" strokeWidth={2} aria-hidden />
+            </div>
+            <h1 className="text-primary-foreground text-5xl font-bold tracking-tight mb-3">
+              NourishWise
+            </h1>
+            <p className="text-primary-foreground/90 text-lg font-medium max-w-xs leading-relaxed">
+              Smart meal planning for a healthier, happier you.
+            </p>
           </div>
-          <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">NourishWise</h1>
-          <p className="text-xl text-white/90 max-w-sm leading-relaxed">
-            Smart meal planning for a healthier, happier you
+
+          {/* Actions */}
+          <div className="w-full space-y-4 mt-12">
+            <Button
+              size="lg"
+              className="w-full h-14 text-lg font-semibold bg-primary-foreground text-primary hover:bg-primary-foreground/95 rounded-2xl shadow-lg active:scale-[0.98] transition-transform"
+              onClick={() => setMode("signup")}
+              aria-label="Get started — create a new account"
+            >
+              Get Started
+              <ArrowRight className="ml-2 h-5 w-5" aria-hidden />
+            </Button>
+
+            <div className="flex flex-col gap-3 items-center pt-1">
+              <button
+                type="button"
+                onClick={() => setMode("signin")}
+                className="text-primary-foreground/90 hover:text-primary-foreground font-medium text-base py-2 min-h-[44px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/60 rounded-lg px-3"
+              >
+                I already have an account
+              </button>
+
+              <div className="w-12 h-px bg-primary-foreground/20 my-1" aria-hidden />
+
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleGuestAccess}
+                disabled={isGuestLoading}
+                className="w-full h-14 text-base font-medium border border-primary-foreground/25 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground rounded-2xl backdrop-blur-sm active:scale-[0.98] transition-transform"
+              >
+                {isGuestLoading ? "Starting..." : "Try as Guest"}
+              </Button>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <p className="text-primary-foreground/60 text-xs px-6 mt-10 leading-relaxed">
+            By continuing, you agree to our Terms of Service and Privacy Policy.
           </p>
-        </div>
-
-        {/* Bottom Actions */}
-        <div className="px-6 pb-12 space-y-4 relative z-10">
-          <Button 
-            size="lg"
-            className="w-full h-16 text-lg font-semibold bg-white text-primary hover:bg-white/95 rounded-2xl shadow-lg shadow-black/10"
-            onClick={() => setMode("signup")}
-          >
-            Get Started
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-          
-          <Button 
-            variant="ghost"
-            size="lg"
-            className="w-full h-14 text-lg text-white hover:bg-white/10 rounded-2xl"
-            onClick={() => setMode("signin")}
-          >
-            I already have an account
-          </Button>
-
-          <div className="relative py-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-white/20" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 text-white/60 bg-primary">or</span>
-            </div>
-          </div>
-
-          <Button 
-            variant="outline"
-            size="lg"
-            className="w-full h-14 text-lg font-medium border-2 border-white/30 bg-white/5 text-white hover:bg-white/10 rounded-2xl backdrop-blur-sm"
-            onClick={handleGuestAccess}
-            disabled={isGuestLoading}
-          >
-            <UserRound className="mr-2 h-5 w-5" />
-            {isGuestLoading ? "Starting..." : "Try as Guest"}
-          </Button>
         </div>
       </div>
     );
